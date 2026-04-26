@@ -20,18 +20,15 @@
             overflow-x: hidden;
         }
 
-        /* Glassmorphism wrapper */
         .app-wrapper {
             max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* Animated header */
         .hero {
             text-align: center;
             margin-bottom: 30px;
-            position: relative;
         }
 
         .hero h1 {
@@ -41,20 +38,16 @@
             background-clip: text;
             color: transparent;
             animation: gradientShift 3s ease infinite;
-            letter-spacing: -0.02em;
         }
 
         @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
+            0%, 100% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
 
         .hero p {
             color: #b0b0d0;
             font-size: 1.1rem;
-            max-width: 700px;
-            margin: 10px auto 0;
         }
 
         .badge-group {
@@ -74,7 +67,6 @@
             border: 1px solid rgba(76, 175, 80, 0.5);
         }
 
-        /* Main grid */
         .constructor-grid {
             display: grid;
             grid-template-columns: 320px 1fr 380px;
@@ -85,12 +77,10 @@
         @media (max-width: 1200px) {
             .constructor-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
             }
         }
 
-        /* Components Panel */
-        .components-panel {
+        .components-panel, .settings-panel {
             background: rgba(20, 20, 40, 0.7);
             backdrop-filter: blur(16px);
             border-radius: 32px;
@@ -121,16 +111,12 @@
             border: 1px solid rgba(76, 175, 80, 0.4);
             border-radius: 20px;
             padding: 14px;
-            cursor: grab;
+            cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 14px;
             font-weight: 500;
-        }
-
-        .drag-item:active {
-            cursor: grabbing;
         }
 
         .drag-item:hover {
@@ -142,15 +128,12 @@
         .drag-item i {
             font-size: 1.4rem;
             color: #4caf50;
-            width: 32px;
         }
 
-        /* Phone Preview Area */
         .phone-preview-area {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 40px;
             padding: 16px;
-            backdrop-filter: blur(4px);
         }
 
         .phone-mock {
@@ -167,8 +150,6 @@
             overflow-y: auto;
             padding: 16px;
             transition: all 0.2s;
-            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
-            scrollbar-width: thin;
         }
 
         .component-wrapper {
@@ -178,27 +159,24 @@
             cursor: move;
         }
 
-        .component-wrapper.dragging-over {
-            border-top: 3px solid #4caf50;
-        }
-
         .component-card {
-            background: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.95);
             border-radius: 20px;
             padding: 12px;
             transition: all 0.2s;
             position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .component-card:hover {
             transform: scale(1.01);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
         .delete-comp {
             position: absolute;
-            top: -8px;
-            right: -8px;
+            top: -10px;
+            right: -10px;
             background: #ff4444;
             color: white;
             border-radius: 30px;
@@ -218,11 +196,9 @@
             opacity: 1;
         }
 
-        /* Styling for elements inside preview */
         .preview-label {
             font-weight: 600;
             font-size: 1rem;
-            margin-bottom: 4px;
         }
 
         .preview-input, .preview-textarea {
@@ -241,15 +217,7 @@
             color: white;
             font-weight: bold;
             width: 100%;
-        }
-
-        /* Right Panel - Settings */
-        .settings-panel {
-            background: rgba(20, 20, 40, 0.7);
-            backdrop-filter: blur(16px);
-            border-radius: 32px;
-            padding: 20px;
-            border: 1px solid rgba(76, 175, 80, 0.3);
+            cursor: pointer;
         }
 
         .setting-row {
@@ -301,11 +269,10 @@
 
         .btn-generate:hover {
             transform: scale(1.02);
-            box-shadow: 0 5px 20px rgba(76,175,80,0.4);
         }
 
-        .download-section {
-            margin-top: 20px;
+        button {
+            cursor: pointer;
         }
 
         footer {
@@ -316,15 +283,10 @@
             font-size: 0.8rem;
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1e1e2e;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #4caf50;
-            border-radius: 10px;
+        .sort-handle {
+            cursor: move;
+            opacity: 0.5;
+            margin-right: 8px;
         }
     </style>
 </head>
@@ -332,7 +294,7 @@
 <div class="app-wrapper">
     <div class="hero">
         <h1><i class="fas fa-cubes"></i> AppForge</h1>
-        <p>No-Code конструктор Android приложений — Drag & Drop интерфейс, живая кастомизация, экспорт в Android Studio</p>
+        <p>No-Code конструктор Android приложений — нажмите на компонент для добавления, перетаскивайте для сортировки</p>
         <div class="badge-group">
             <span class="badge"><i class="fas fa-mobile-alt"></i> Адаптивно</span>
             <span class="badge"><i class="fas fa-palette"></i> Полная кастомизация</span>
@@ -341,32 +303,29 @@
     </div>
 
     <div class="constructor-grid">
-        <!-- Левая панель: компоненты -->
         <div class="components-panel">
-            <div class="panel-title"><i class="fas fa-puzzle-piece"></i> Компоненты</div>
-            <div class="drag-items" id="componentsList">
-                <div class="drag-item" draggable="true" data-type="label"><i class="fas fa-heading"></i> Текстовый блок</div>
-                <div class="drag-item" draggable="true" data-type="edittext"><i class="fas fa-keyboard"></i> Поле ввода</div>
-                <div class="drag-item" draggable="true" data-type="button"><i class="fas fa-hand-pointer"></i> Кнопка</div>
-                <div class="drag-item" draggable="true" data-type="textarea"><i class="fas fa-align-left"></i> Текстовая область</div>
-                <div class="drag-item" draggable="true" data-type="card"><i class="fas fa-credit-card"></i> Карточка</div>
-                <div class="drag-item" draggable="true" data-type="image"><i class="fas fa-image"></i> Изображение</div>
+            <div class="panel-title"><i class="fas fa-puzzle-piece"></i> Компоненты (нажмите для добавления)</div>
+            <div class="drag-items">
+                <div class="drag-item" data-type="label"><i class="fas fa-heading"></i> Текстовый блок</div>
+                <div class="drag-item" data-type="edittext"><i class="fas fa-keyboard"></i> Поле ввода</div>
+                <div class="drag-item" data-type="button"><i class="fas fa-hand-pointer"></i> Кнопка</div>
+                <div class="drag-item" data-type="textarea"><i class="fas fa-align-left"></i> Текстовая область</div>
+                <div class="drag-item" data-type="card"><i class="fas fa-credit-card"></i> Карточка</div>
+                <div class="drag-item" data-type="image"><i class="fas fa-image"></i> Изображение</div>
             </div>
             <div class="panel-title" style="margin-top: 25px;"><i class="fas fa-trash-alt"></i> Управление</div>
             <button id="clearAllBtn" style="background:#d32f2f; border:none; padding:10px; border-radius:30px; width:100%; margin-bottom:8px; color:white;"><i class="fas fa-broom"></i> Очистить всё</button>
             <button id="resetExampleBtn" style="background:#2c3e50; border:none; padding:10px; border-radius:30px; width:100%; color:white;"><i class="fas fa-star"></i> Загрузить пример</button>
         </div>
 
-        <!-- Центр: Живой телефон -->
         <div class="phone-preview-area">
             <div class="phone-mock">
                 <div class="phone-screen" id="phoneScreen">
-                    <div style="text-align:center; opacity:0.6; padding:40px;">📱 Перетащите компоненты сюда</div>
+                    <div style="text-align:center; opacity:0.6; padding:40px;">📱 Нажмите на компонент слева, чтобы добавить</div>
                 </div>
             </div>
         </div>
 
-        <!-- Правая панель: настройки и экспорт -->
         <div class="settings-panel">
             <div class="panel-title"><i class="fas fa-sliders-h"></i> Стилизация</div>
             <div class="setting-row">
@@ -389,28 +348,23 @@
                 <input type="text" id="appName" value="AppForgeApp">
             </div>
             <div class="setting-row">
-                <label>📦 Package Name (уникальный)</label>
+                <label>📦 Package Name</label>
                 <input type="text" id="packageName" value="com.appforge.customapp">
             </div>
             
-            <button id="generateProjectBtn" class="btn-generate"><i class="fas fa-download"></i> Сгенерировать Android проект (APK ready)</button>
-            <div class="download-section">
-                <div id="downloadMsg" style="font-size:12px; text-align:center; margin-top:10px;"></div>
-            </div>
+            <button id="generateProjectBtn" class="btn-generate"><i class="fas fa-download"></i> Сгенерировать Android проект</button>
         </div>
     </div>
     <footer>
-        ⚡ Создайте приложение визуально — скачайте ZIP → откройте в Android Studio → Build APK. Все компоненты работают, адаптация под любые экраны!
+        ⚡ Нажмите на компонент → он появится на экране. Перетаскивайте элементы внутри телефона для изменения порядка!
     </footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-    // ---------- State ----------
-    let components = [];  // { id, type, props }
+    let components = [];
     let nextId = 1000;
     
-    // App settings
     let appStyle = {
         bgColor: "#f8f9ff",
         textColor: "#1e272e",
@@ -419,10 +373,8 @@
         packageName: "com.appforge.customapp"
     };
     
-    // Helper
     function generateId() { return nextId++; }
     
-    // Render preview
     function renderPreview() {
         const screen = document.getElementById('phoneScreen');
         if (!screen) return;
@@ -432,13 +384,12 @@
         screen.style.setProperty('--accent', appStyle.accentColor);
         
         if (components.length === 0) {
-            screen.innerHTML = `<div style="text-align:center; opacity:0.6; padding:40px;"><i class="fas fa-arrow-left"></i> Перетащите компоненты сюда</div>`;
+            screen.innerHTML = `<div style="text-align:center; opacity:0.6; padding:40px;">📱 Нажмите на компонент слева, чтобы добавить</div>`;
             return;
         }
         
         let html = '';
-        components.forEach((comp, idx) => {
-            const styleObj = `margin-bottom: 12px;`;
+        components.forEach((comp) => {
             const deleteBtn = `<div class="delete-comp" data-id="${comp.id}"><i class="fas fa-times"></i></div>`;
             if (comp.type === 'label') {
                 html += `<div class="component-wrapper" data-id="${comp.id}" draggable="true">
@@ -448,36 +399,36 @@
                          </div>`;
             } 
             else if (comp.type === 'edittext') {
-                html += `<div class="component-wrapper" data-id="${comp.id}">
+                html += `<div class="component-wrapper" data-id="${comp.id}" draggable="true">
                             <div class="component-card">${deleteBtn}
                                 <input class="preview-input" type="text" placeholder="${escapeHtml(comp.props.placeholder || 'Введите текст...')}" style="width:100%;">
                             </div>
                          </div>`;
             }
             else if (comp.type === 'button') {
-                html += `<div class="component-wrapper" data-id="${comp.id}">
+                html += `<div class="component-wrapper" data-id="${comp.id}" draggable="true">
                             <div class="component-card">${deleteBtn}
                                 <button class="preview-button" style="background:${appStyle.accentColor};">${escapeHtml(comp.props.text || 'Кнопка')}</button>
                             </div>
                          </div>`;
             }
             else if (comp.type === 'textarea') {
-                html += `<div class="component-wrapper" data-id="${comp.id}">
+                html += `<div class="component-wrapper" data-id="${comp.id}" draggable="true">
                             <div class="component-card">${deleteBtn}
                                 <textarea class="preview-textarea" rows="3" placeholder="${escapeHtml(comp.props.placeholder || 'Многострочный текст...')}"></textarea>
                             </div>
                          </div>`;
             }
             else if (comp.type === 'card') {
-                html += `<div class="component-wrapper" data-id="${comp.id}">
+                html += `<div class="component-wrapper" data-id="${comp.id}" draggable="true">
                             <div class="component-card" style="background: rgba(76,175,80,0.1); border-left: 4px solid ${appStyle.accentColor};">${deleteBtn}
                                 <strong><i class="fas fa-layer-group"></i> Карточка</strong>
-                                <div>${escapeHtml(comp.props.content || 'Контент карточки, любой текст')}</div>
+                                <div>${escapeHtml(comp.props.content || 'Контент карточки')}</div>
                             </div>
                          </div>`;
             }
             else if (comp.type === 'image') {
-                html += `<div class="component-wrapper" data-id="${comp.id}">
+                html += `<div class="component-wrapper" data-id="${comp.id}" draggable="true">
                             <div class="component-card">${deleteBtn}
                                 <div style="text-align:center;"><i class="fas fa-image" style="font-size:48px; color:${appStyle.accentColor};"></i></div>
                                 <div style="font-size:12px; text-align:center;">${escapeHtml(comp.props.caption || 'Изображение')}</div>
@@ -488,22 +439,18 @@
         
         screen.innerHTML = html;
         
-        // attach delete events
         document.querySelectorAll('.delete-comp').forEach(el => {
             el.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const id = parseInt(el.getAttribute('data-id'));
                 components = components.filter(c => c.id !== id);
                 renderPreview();
-                updateUIinputs();
             });
         });
         
-        // re-attach drag for reordering
         attachDragSort();
     }
     
-    // Add component
     function addComponent(type, props = {}) {
         let defaultProps = {};
         if (type === 'label') defaultProps = { text: 'Новый текст' };
@@ -516,61 +463,47 @@
         const newComp = { id: generateId(), type: type, props: { ...defaultProps, ...props } };
         components.push(newComp);
         renderPreview();
-        updateUIinputs();
     }
     
-    // Drag & Drop from left panel
-    function initDragDrop() {
-        const dragItems = document.querySelectorAll('.drag-item');
-        dragItems.forEach(item => {
-            item.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', item.getAttribute('data-type'));
-                e.dataTransfer.effectAllowed = 'copy';
-            });
-        });
-        
-        const phoneScreen = document.getElementById('phoneScreen');
-        phoneScreen.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'copy';
-        });
-        
-        phoneScreen.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const type = e.dataTransfer.getData('text/plain');
-            if (type) addComponent(type);
-        });
-    }
-    
-    // Drag & Drop for reorder (inside preview)
     function attachDragSort() {
         const wrappers = document.querySelectorAll('.component-wrapper');
+        let dragSrcId = null;
+        
         wrappers.forEach(wrapper => {
-            wrapper.setAttribute('draggable', 'true');
             wrapper.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', 'reorder');
-                e.dataTransfer.setData('sourceId', wrapper.getAttribute('data-id'));
+                dragSrcId = parseInt(wrapper.getAttribute('data-id'));
+                e.dataTransfer.setData('text/plain', dragSrcId);
                 e.dataTransfer.effectAllowed = 'move';
+                wrapper.style.opacity = '0.5';
             });
+            
+            wrapper.addEventListener('dragend', (e) => {
+                wrapper.style.opacity = '1';
+            });
+            
             wrapper.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                wrapper.classList.add('dragging-over');
+                wrapper.style.borderTop = '2px solid #4caf50';
             });
-            wrapper.addEventListener('dragleave', () => wrapper.classList.remove('dragging-over'));
+            
+            wrapper.addEventListener('dragleave', (e) => {
+                wrapper.style.borderTop = '';
+            });
+            
             wrapper.addEventListener('drop', (e) => {
                 e.preventDefault();
-                wrapper.classList.remove('dragging-over');
-                const sourceId = parseInt(e.dataTransfer.getData('sourceId'));
+                wrapper.style.borderTop = '';
                 const targetId = parseInt(wrapper.getAttribute('data-id'));
-                if (sourceId && targetId && sourceId !== targetId) {
-                    const sourceIndex = components.findIndex(c => c.id === sourceId);
+                if (dragSrcId && targetId && dragSrcId !== targetId) {
+                    const srcIndex = components.findIndex(c => c.id === dragSrcId);
                     const targetIndex = components.findIndex(c => c.id === targetId);
-                    if (sourceIndex !== -1 && targetIndex !== -1) {
-                        const [moved] = components.splice(sourceIndex, 1);
+                    if (srcIndex !== -1 && targetIndex !== -1) {
+                        const [moved] = components.splice(srcIndex, 1);
                         components.splice(targetIndex, 0, moved);
                         renderPreview();
                     }
                 }
+                dragSrcId = null;
             });
         });
     }
@@ -583,7 +516,6 @@
         addComponent('card', { content: '✨ Полностью настраиваемое приложение без кода' });
         addComponent('textarea', { placeholder: 'Доп. информация...' });
         addComponent('image', { caption: 'Ваш логотип' });
-        renderPreview();
     }
     
     function clearAll() {
@@ -591,30 +523,13 @@
         renderPreview();
     }
     
-    function updateUIinputs() {
-        document.getElementById('bgColor').value = appStyle.bgColor;
-        document.getElementById('bgColorText').value = appStyle.bgColor;
-        document.getElementById('textColor').value = appStyle.textColor;
-        document.getElementById('accentColor').value = appStyle.accentColor;
-        document.getElementById('appName').value = appStyle.appName;
-        document.getElementById('packageName').value = appStyle.packageName;
-    }
-    
-    function bindSettings() {
-        const bgColorPicker = document.getElementById('bgColor');
-        const bgColorText = document.getElementById('bgColorText');
-        bgColorPicker.addEventListener('input', (e) => { appStyle.bgColor = e.target.value; bgColorText.value = e.target.value; renderPreview(); });
-        bgColorText.addEventListener('input', (e) => { appStyle.bgColor = e.target.value; bgColorPicker.value = e.target.value; renderPreview(); });
-        document.getElementById('textColor').addEventListener('input', (e) => { appStyle.textColor = e.target.value; renderPreview(); });
-        document.getElementById('accentColor').addEventListener('input', (e) => { appStyle.accentColor = e.target.value; renderPreview(); });
-        document.getElementById('appName').addEventListener('input', (e) => appStyle.appName = e.target.value);
-        document.getElementById('packageName').addEventListener('input', (e) => appStyle.packageName = e.target.value);
-        document.getElementById('clearAllBtn').addEventListener('click', clearAll);
-        document.getElementById('resetExampleBtn').addEventListener('click', loadExample);
-    }
-    
-    // Generate Android Studio project with FULL working code
     function generateAndroidProject() {
+        if (typeof JSZip === 'undefined') {
+            alert("Подождите, библиотека загружается...");
+            setTimeout(() => generateAndroidProject(), 500);
+            return;
+        }
+        
         const pkg = appStyle.packageName;
         const pkgPath = pkg.replace(/\./g, '/');
         const appName = appStyle.appName;
@@ -625,76 +540,30 @@
         let xmlLayout = '';
         components.forEach(comp => {
             if (comp.type === 'label') {
-                xmlLayout += `<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="${escapeXml(comp.props.text || 'Текст')}" android:textSize="18sp" android:textColor="${textHex}" android:layout_marginTop="12dp" android:padding="8dp"/>\n`;
+                xmlLayout += `<TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="${escapeXml(comp.props.text)}" android:textSize="18sp" android:textColor="${textHex}" android:layout_marginTop="12dp" android:padding="8dp"/>\n`;
             } else if (comp.type === 'edittext') {
-                xmlLayout += `<EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="${escapeXml(comp.props.placeholder || 'Ввод')}" android:background="@drawable/rounded_bg" android:layout_marginTop="12dp" android:padding="12dp"/>\n`;
+                xmlLayout += `<EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="${escapeXml(comp.props.placeholder)}" android:background="@drawable/rounded_bg" android:layout_marginTop="12dp" android:padding="12dp"/>\n`;
             } else if (comp.type === 'button') {
-                xmlLayout += `<Button android:layout_width="match_parent" android:layout_height="wrap_content" android:text="${escapeXml(comp.props.text || 'Кнопка')}" android:backgroundTint="${accentHex}" android:textColor="#ffffff" android:layout_marginTop="16dp" android:padding="12dp"/>\n`;
+                xmlLayout += `<Button android:layout_width="match_parent" android:layout_height="wrap_content" android:text="${escapeXml(comp.props.text)}" android:backgroundTint="${accentHex}" android:textColor="#ffffff" android:layout_marginTop="16dp" android:padding="12dp"/>\n`;
             } else if (comp.type === 'textarea') {
-                xmlLayout += `<EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textMultiLine" android:lines="4" android:hint="${escapeXml(comp.props.placeholder || 'Многострочный текст')}" android:layout_marginTop="12dp" android:background="@drawable/rounded_bg"/>\n`;
+                xmlLayout += `<EditText android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textMultiLine" android:lines="4" android:hint="${escapeXml(comp.props.placeholder)}" android:layout_marginTop="12dp" android:background="@drawable/rounded_bg"/>\n`;
             } else if (comp.type === 'card') {
-                xmlLayout += `<androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="wrap_content" app:cardCornerRadius="16dp" android:layout_marginTop="12dp"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="${escapeXml(comp.props.content || 'Карточка')}" android:padding="16dp" android:textColor="${textHex}"/></androidx.cardview.widget.CardView>\n`;
+                xmlLayout += `<androidx.cardview.widget.CardView android:layout_width="match_parent" android:layout_height="wrap_content" app:cardCornerRadius="16dp" android:layout_marginTop="12dp"><TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="${escapeXml(comp.props.content)}" android:padding="16dp" android:textColor="${textHex}"/></androidx.cardview.widget.CardView>\n`;
             } else if (comp.type === 'image') {
                 xmlLayout += `<ImageView android:layout_width="match_parent" android:layout_height="100dp" android:src="@drawable/ic_placeholder" android:scaleType="centerCrop" android:layout_marginTop="12dp"/>\n`;
             }
         });
         
-        const activityMain = `package ${pkg};
-
-import android.os.Bundle;
-import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
-import android.view.View;
-
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        // базовый обработчик для всех кнопок (демо)
-        findViewById(R.id.button1).setOnClickListener(v -> Toast.makeText(this, "Работает!", Toast.LENGTH_SHORT).show());
-    }
-}`;
-
-        const manifest = `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${pkg}">
-    <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="${appName}" android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".MainActivity" android:exported="true">
-            <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter>
-        </activity>
-    </application>
-</manifest>`;
-        
-        const buildGradle = `plugins { id 'com.android.application' }
-android { namespace '${pkg}' compileSdk 34
-    defaultConfig { applicationId "${pkg}" minSdk 21 targetSdk 34 versionCode 1 versionName "1.0" }
-    buildTypes { release { minifyEnabled false } }
-    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8 targetCompatibility JavaVersion.VERSION_1_8 }
-}
-dependencies { implementation 'androidx.appcompat:appcompat:1.6.1' implementation 'com.google.android.material:material:1.10.0' implementation 'androidx.cardview:cardview:1.0.0' }`;
-        
-        const roundedDrawable = `<?xml version="1.0" encoding="utf-8"?><shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="#f0f0f0"/><corners android:radius="20dp"/></shape>`;
-        
-        const activityXml = `<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="${bgHex}" android:padding="16dp">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-        ${xmlLayout}
-    </LinearLayout>
-</ScrollView>`;
-        
         const files = {
-            `app/src/main/java/${pkgPath}/MainActivity.java`: activityMain,
-            `app/src/main/AndroidManifest.xml`: manifest,
-            `app/build.gradle`: buildGradle,
-            `app/src/main/res/layout/activity_main.xml`: activityXml,
-            `app/src/main/res/drawable/rounded_bg.xml`: roundedDrawable,
-            `build.gradle`: "// Top-level",
-            `settings.gradle`: "include ':app'",
-            `gradle.properties`: "org.gradle.jvmargs=-Xmx2048m"
+            [`app/src/main/java/${pkgPath}/MainActivity.java`]: `package ${pkg};\n\nimport android.os.Bundle;\nimport android.widget.Toast;\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n    }\n}`,
+            "app/src/main/AndroidManifest.xml": `<?xml version="1.0" encoding="utf-8"?>\n<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${pkg}">\n    <application android:allowBackup="true" android:icon="@mipmap/ic_launcher" android:label="${appName}" android:theme="@style/Theme.AppCompat.Light.NoActionBar">\n        <activity android:name=".MainActivity" android:exported="true">\n            <intent-filter>\n                <action android:name="android.intent.action.MAIN"/>\n                <category android:name="android.intent.category.LAUNCHER"/>\n            </intent-filter>\n        </activity>\n    </application>\n</manifest>`,
+            "app/build.gradle": `plugins { id 'com.android.application' }\nandroid { namespace '${pkg}' compileSdk 34\n    defaultConfig { applicationId "${pkg}" minSdk 21 targetSdk 34 versionCode 1 versionName "1.0" }\n    buildTypes { release { minifyEnabled false } }\n}\ndependencies { implementation 'androidx.appcompat:appcompat:1.6.1' implementation 'androidx.cardview:cardview:1.0.0' }`,
+            "app/src/main/res/layout/activity_main.xml": `<?xml version="1.0" encoding="utf-8"?>\n<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="${bgHex}" android:padding="16dp">\n    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">\n        ${xmlLayout}\n    </LinearLayout>\n</ScrollView>`,
+            "app/src/main/res/drawable/rounded_bg.xml": `<?xml version="1.0" encoding="utf-8"?>\n<shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="#f0f0f0"/><corners android:radius="20dp"/></shape>`,
+            "build.gradle": "// Top-level",
+            "settings.gradle": "include ':app'"
         };
         
-        if (typeof JSZip === 'undefined') { alert("Загрузка JSZip..."); setTimeout(() => generateAndroidProject(), 300); return; }
         const zip = new JSZip();
         for (let [path, content] of Object.entries(files)) zip.file(path, content);
         zip.generateAsync({ type: "blob" }).then(blob => {
@@ -703,23 +572,31 @@ dependencies { implementation 'androidx.appcompat:appcompat:1.6.1' implementatio
             link.download = `${appStyle.appName}_AndroidStudio.zip`;
             link.click();
             URL.revokeObjectURL(blob);
-            document.getElementById('downloadMsg').innerHTML = '✅ Проект сгенерирован! Распакуйте и откройте в Android Studio.';
-            setTimeout(() => document.getElementById('downloadMsg').innerHTML = '', 4000);
+            alert('✅ Проект сгенерирован! Распакуйте и откройте в Android Studio.');
         });
     }
     
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
     function escapeXml(str) { return escapeHtml(str); }
     
-    // init
-    function init() {
-        bindSettings();
-        initDragDrop();
-        loadExample();
-        updateUIinputs();
-        document.getElementById('generateProjectBtn').addEventListener('click', generateAndroidProject);
-    }
-    init();
+    document.querySelectorAll('.drag-item').forEach(el => {
+        el.addEventListener('click', () => addComponent(el.getAttribute('data-type')));
+    });
+    
+    document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+    document.getElementById('resetExampleBtn').addEventListener('click', loadExample);
+    document.getElementById('generateProjectBtn').addEventListener('click', generateAndroidProject);
+    
+    const bgColorPicker = document.getElementById('bgColor');
+    const bgColorText = document.getElementById('bgColorText');
+    bgColorPicker.addEventListener('input', (e) => { appStyle.bgColor = e.target.value; bgColorText.value = e.target.value; renderPreview(); });
+    bgColorText.addEventListener('input', (e) => { appStyle.bgColor = e.target.value; bgColorPicker.value = e.target.value; renderPreview(); });
+    document.getElementById('textColor').addEventListener('input', (e) => { appStyle.textColor = e.target.value; renderPreview(); });
+    document.getElementById('accentColor').addEventListener('input', (e) => { appStyle.accentColor = e.target.value; renderPreview(); });
+    document.getElementById('appName').addEventListener('input', (e) => appStyle.appName = e.target.value);
+    document.getElementById('packageName').addEventListener('input', (e) => appStyle.packageName = e.target.value);
+    
+    loadExample();
 </script>
 </body>
 </html>
