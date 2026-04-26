@@ -1,907 +1,492 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Free Builder Pro — Конструктор приложений</title>
-    <style>
-        :root {
-            --bg: #ffffff; --surface: #f8fafc; --border: #e2e8f0;
-            --primary: #7c3aed; --primary-light: #f5f3ff; --primary-dark: #6d28d9;
-            --text: #1e293b; --text-secondary: #64748b;
-            --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
-            --phone-bg: #ffffff;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f1f5f9; color: var(--text); height: 100vh; overflow: hidden;
-        }
-        #app { display: flex; flex-direction: column; height: 100vh; }
-
-        /* TOOLBAR */
-        #toolbar {
-            height: 56px; background: var(--bg); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 20px; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .logo { font-size: 18px; font-weight: 800; }
-        .logo span { background: linear-gradient(135deg, #7c3aed, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .btn {
-            padding: 9px 16px; border: none; border-radius: 10px; font-size: 12px;
-            font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;
-            font-family: inherit; letter-spacing: -0.2px;
-        }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-outline { background: var(--bg); border: 2px solid var(--border); color: var(--text); }
-        .btn-outline:hover { background: var(--surface); }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-sm { padding: 5px 12px; font-size: 11px; border-radius: 8px; }
-        #projectName {
-            padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px;
-            font-size: 13px; font-weight: 600; width: 140px; font-family: inherit;
-        }
-        #projectName:focus { outline: none; border-color: var(--primary); }
-
-        /* MAIN */
-        #mainContent { display: flex; flex: 1; overflow: hidden; }
-
-        /* LEFT - Components */
-        #componentPanel {
-            width: 250px; background: var(--bg); border-right: 1px solid var(--border);
-            overflow-y: auto; flex-shrink: 0; padding: 8px;
-        }
-        .cat-title {
-            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
-            color: var(--text-secondary); padding: 8px 4px; margin-top: 8px;
-        }
-        .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .comp-item {
-            background: var(--surface); border: 2px solid var(--border); border-radius: 12px;
-            padding: 12px 8px; cursor: grab; text-align: center; font-size: 11px;
-            font-weight: 600; transition: all 0.2s; color: var(--text-secondary);
-            display: flex; flex-direction: column; align-items: center; gap: 6px;
-        }
-        .comp-item:hover {
-            border-color: var(--primary); background: var(--primary-light);
-            color: var(--primary); transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(124,58,237,0.15);
-        }
-        .comp-item:active { cursor: grabbing; transform: scale(0.95); }
-        .comp-icon { font-size: 26px; }
-
-        /* CENTER - Phone */
-        #previewArea {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            background: #e2e8f0; background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 20px 20px; overflow: auto; padding: 20px;
-        }
-        #phoneFrame {
-            width: 390px; min-height: 700px; background: var(--phone-bg); border-radius: 40px;
-            box-shadow: 0 0 0 8px #1e293b, 0 0 0 10px #334155, 0 30px 80px rgba(0,0,0,0.3);
-            overflow: hidden; flex-shrink: 0;
-        }
-        #phoneNotch {
-            width: 140px; height: 28px; background: #1e293b;
-            border-radius: 0 0 18px 18px; margin: 0 auto;
-        }
-        #phoneStatusBar {
-            height: 40px; display: flex; align-items: center; justify-content: space-between;
-            padding: 0 24px; font-size: 13px; font-weight: 700; background: white;
-        }
-        #phoneAppBar {
-            background: var(--primary); color: white; padding: 16px 20px;
-            font-size: 18px; font-weight: 800; letter-spacing: -0.3px;
-        }
-        #phoneContent {
-            padding: 16px; min-height: 500px; position: relative;
-            transition: background 0.2s;
-        }
-        #phoneContent.drag-over {
-            background: var(--primary-light); outline: 3px dashed var(--primary);
-            outline-offset: -5px; border-radius: 20px;
-        }
-
-        /* Widget states */
-        .widget-wrapper {
-            position: relative; cursor: move; transition: box-shadow 0.2s;
-            margin-bottom: 8px;
-        }
-        .widget-wrapper:hover { z-index: 5; }
-        .widget-wrapper.selected > * { outline: 3px solid var(--primary) !important; outline-offset: 2px; }
-        .widget-wrapper.has-function::after {
-            content: '⚡'; position: absolute; top: -8px; right: -8px;
-            background: var(--primary); color: white; width: 22px; height: 22px;
-            border-radius: 50%; font-size: 12px; display: flex; align-items: center;
-            justify-content: center; z-index: 10; box-shadow: 0 2px 6px rgba(124,58,237,0.4);
-        }
-        .empty-phone {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 350px; color: #cbd5e1; gap: 12px;
-        }
-
-        /* Widget styles */
-        .w-button {
-            width: 100%; padding: 14px; border: none; border-radius: 10px;
-            color: white; font-weight: 700; font-size: 15px; text-align: center;
-            letter-spacing: -0.2px; cursor: pointer;
-        }
-        .w-text { font-weight: 600; padding: 4px 0; word-break: break-word; }
-        .w-input {
-            width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px;
-            font-size: 14px; font-family: inherit; background: white;
-        }
-        .w-image {
-            width: 100%; border-radius: 12px; object-fit: cover; background: #e2e8f0;
-            display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 40px;
-        }
-        .w-card {
-            background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 16px;
-        }
-        .w-switch-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
-        .w-switch-track {
-            width: 48px; height: 28px; border-radius: 14px; position: relative;
-            transition: all 0.3s; flex-shrink: 0;
-        }
-        .w-switch-thumb {
-            width: 24px; height: 24px; border-radius: 50%; background: white;
-            position: absolute; top: 2px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .w-slider-wrap { padding: 4px 0; }
-        .w-slider-track { height: 6px; background: #e2e8f0; border-radius: 3px; position: relative; margin-top: 6px; }
-        .w-slider-fill { height: 100%; border-radius: 3px; }
-        .w-slider-thumb {
-            width: 22px; height: 22px; border-radius: 50%; position: absolute;
-            top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-        }
-        .w-listview { background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
-        .w-listview-item { padding: 13px 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 500; }
-        .w-listview-item:last-child { border-bottom: none; }
-        .w-container {
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            color: #7c3aed; font-weight: 600; font-size: 14px; min-height: 60px;
-        }
-        .w-avatar {
-            border-radius: 50%; color: white; display: flex; align-items: center;
-            justify-content: center; font-weight: 800;
-        }
-
-        /* RIGHT - Inspector */
-        #inspectorPanel {
-            width: 340px; background: var(--bg); border-left: 1px solid var(--border);
-            overflow-y: auto; flex-shrink: 0;
-        }
-        .insp-empty {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100%; color: #cbd5e1; text-align: center; gap: 12px; padding: 40px;
-        }
-        .insp-content { padding: 16px; }
-        .insp-header {
-            font-weight: 800; font-size: 15px; padding-bottom: 14px;
-            border-bottom: 1px solid var(--border); margin-bottom: 14px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .prop-section { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
-        .prop-section:last-child { border-bottom: none; }
-        .prop-label {
-            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
-            color: var(--text-secondary); margin-bottom: 4px;
-        }
-        .prop-input, .prop-select, .prop-textarea {
-            width: 100%; padding: 10px 14px; border: 2px solid var(--border);
-            border-radius: 10px; font-size: 13px; font-family: inherit; font-weight: 500;
-            background: var(--surface);
-        }
-        .prop-input:focus, .prop-select:focus, .prop-textarea:focus {
-            outline: none; border-color: var(--primary); background: white;
-            box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
-        }
-        .color-row { display: flex; gap: 8px; }
-        .color-box {
-            width: 44px; height: 44px; border: 2px solid var(--border);
-            border-radius: 10px; cursor: pointer; padding: 3px;
-        }
-        .func-chip {
-            display: inline-block; padding: 6px 14px; margin: 3px;
-            border: 2px solid var(--border); border-radius: 20px;
-            font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-        }
-        .func-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .func-chip:hover { border-color: var(--primary); }
-        .info-box {
-            margin-top: 12px; padding: 14px; background: #f0fdf4; border: 2px solid #bbf7d0;
-            border-radius: 12px; font-size: 12px; line-height: 1.5;
-        }
-        .info-box h4 { margin-bottom: 6px; color: #16a34a; }
-
-        /* TOAST */
-        #toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: #1e293b; color: white; padding: 14px 28px; border-radius: 30px;
-            font-size: 14px; font-weight: 700; z-index: 9999; opacity: 0;
-            transition: opacity 0.3s; pointer-events: none;
-        }
-        #toast.show { opacity: 1; }
-
-        /* HELP MODAL */
-        #helpModal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 1000; display: none;
-            align-items: center; justify-content: center;
-        }
-        #helpModal.show { display: flex; }
-        .modal-content {
-            background: white; border-radius: 20px; padding: 30px; max-width: 600px;
-            max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        .modal-content h2 { font-size: 22px; margin-bottom: 16px; }
-        .modal-content h3 { font-size: 16px; margin-top: 16px; margin-bottom: 8px; color: var(--primary); }
-        .modal-content p { font-size: 13px; line-height: 1.7; margin-bottom: 8px; color: var(--text-secondary); }
-        .modal-content ul { padding-left: 20px; font-size: 13px; line-height: 1.8; color: var(--text-secondary); }
-        .modal-content kbd {
-            background: #f1f5f9; padding: 2px 8px; border-radius: 4px;
-            font-size: 12px; font-weight: 700; border: 1px solid #cbd5e1;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Free Builder Pro</title>
+<style>
+:root {
+--bg:#fff;--surface:#f8fafc;--border:#e2e8f0;--primary:#7c3aed;
+--plight:#f5f3ff;--pdark:#6d28d9;--text:#1e293b;--t2:#64748b;
+--danger:#ef4444;--success:#10b981;--warning:#f59e0b;--info:#3b82f6;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;color:var(--text);height:100vh;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh}
+#tb{height:54px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.05);gap:8px}
+.logo{font-size:17px;font-weight:800}
+.logo span{background:linear-gradient(135deg,#7c3aed,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.btn{padding:7px 12px;border:none;border-radius:9px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.2s;white-space:nowrap;font-family:inherit}
+.btn1{background:var(--primary);color:#fff}
+.btn1:hover{background:var(--pdark)}
+.btn2{background:var(--success);color:#fff}
+.btn2:hover{filter:brightness(1.1)}
+.btn3{background:var(--bg);border:2px solid var(--border);color:var(--text)}
+.btn3:hover{background:var(--surface)}
+.btn4{background:var(--danger);color:#fff}
+.btn5{background:var(--warning);color:#fff}
+.btn6{background:var(--info);color:#fff}
+.btn-sm{padding:4px 9px;font-size:10px;border-radius:7px}
+#pn{padding:7px 11px;border:2px solid var(--border);border-radius:9px;font-size:11px;font-weight:600;width:110px;font-family:inherit}
+#pn:focus{outline:none;border-color:var(--primary)}
+#main{display:flex;flex:1;overflow:hidden}
+#lp{width:240px;background:var(--bg);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0;padding:6px}
+.ct{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:var(--t2);padding:10px 3px 3px;border-top:1px solid var(--border);margin-top:2px}
+.ct:first-child{border-top:none;margin-top:0}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px 0}
+.ci{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:10px 6px;cursor:grab;text-align:center;font-size:10px;font-weight:600;transition:all 0.2s;color:var(--t2);display:flex;flex-direction:column;align-items:center;gap:4px}
+.ci:hover{border-color:var(--primary);background:var(--plight);color:var(--primary);transform:translateY(-1px);box-shadow:0 3px 10px rgba(124,58,237,0.12)}
+.ci:active{cursor:grabbing;transform:scale(0.95)}
+.cic{font-size:22px}
+#pa{flex:1;display:flex;align-items:center;justify-content:center;background:#e2e8f0;background-image:radial-gradient(#cbd5e1 1px,transparent 1px);background-size:18px 18px;overflow:auto;padding:16px}
+#pf{width:380px;min-height:680px;background:var(--bg);border-radius:38px;box-shadow:0 0 0 7px #1e293b,0 0 0 9px #334155,0 25px 70px rgba(0,0,0,0.3);overflow:hidden;flex-shrink:0}
+#pfc{width:130px;height:26px;background:#1e293b;border-radius:0 0 16px 16px;margin:0 auto}
+#psb{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:12px;font-weight:700;background:var(--bg)}
+#pab{background:var(--primary);color:#fff;padding:14px 18px;font-size:17px;font-weight:800;letter-spacing:-0.3px}
+#pct{padding:14px;min-height:480px;position:relative;transition:background 0.2s;display:flex;flex-direction:column;gap:8px}
+#pct.drag-over{background:var(--plight);outline:3px dashed var(--primary);outline-offset:-5px;border-radius:18px}
+.ww{position:relative;cursor:grab;transition:all 0.2s}
+.ww:active{cursor:grabbing}
+.ww.sel>*{outline:3px solid var(--primary)!important;outline-offset:3px;border-radius:4px}
+.ww.ha::before{content:'⚡';position:absolute;top:-10px;right:-10px;background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;font-size:11px;display:flex;align-items:center;justify-content:center;z-index:10;box-shadow:0 2px 6px rgba(124,58,237,0.5)}
+.ep{display:flex;flex-direction:column;align-items:center;justify-content:center;height:320px;color:#cbd5e1;gap:10px}
+.wb{width:100%;padding:13px;border:none;border-radius:9px;color:#fff;font-weight:700;font-size:14px;text-align:center;cursor:pointer;transition:all 0.15s}
+.wb:hover{filter:brightness(1.1);transform:scale(1.02)}
+.wb:active{transform:scale(0.97)!important}
+.wt{font-weight:600;padding:3px 0;word-break:break-word;cursor:default}
+.wi{width:100%;padding:12px;border:2px solid #e2e8f0;border-radius:9px;font-size:13px;font-family:inherit;background:#fff}
+.wi:focus{outline:none;border-color:var(--primary)}
+.wim{width:100%;border-radius:11px;object-fit:cover;background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:36px;overflow:hidden}
+.wcrd{background:#fff;border-radius:13px;box-shadow:0 2px 6px rgba(0,0,0,0.07);padding:14px}
+.wsr{display:flex;align-items:center;justify-content:space-between;padding:7px 0}
+.wst{width:46px;height:26px;border-radius:13px;position:relative;transition:all 0.3s;flex-shrink:0;cursor:pointer}
+.wsth{width:22px;height:22px;border-radius:50%;background:#fff;position:absolute;top:2px;transition:all 0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.wslw{padding:3px 0}
+.wslt{height:5px;background:#e2e8f0;border-radius:3px;position:relative;margin-top:5px;cursor:pointer}
+.wslf{height:100%;border-radius:3px}
+.wslth{width:22px;height:22px;border-radius:50%;position:absolute;top:-8px;box-shadow:0 2px 6px rgba(0,0,0,0.3);cursor:pointer}
+.wlv{background:#fff;border:1px solid #e2e8f0;border-radius:11px;overflow:hidden}
+.wlvi{padding:12px 14px;border-bottom:1px solid #f1f5f9;font-size:13px;font-weight:500;cursor:pointer;transition:background 0.15s}
+.wlvi:last-child{border-bottom:none}
+.wlvi:hover{background:#f8fafc}
+.wct{border-radius:11px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;min-height:55px}
+.wpg{width:100%;height:9px;background:#e2e8f0;border-radius:5px;overflow:hidden}
+.wpgf{height:100%;border-radius:5px;transition:width 0.5s}
+.wav{border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+.wch{display:flex;align-items:center;gap:9px;padding:3px 0;cursor:pointer}
+.wchb{width:20px;height:20px;border:2px solid #cbd5e1;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.2s;flex-shrink:0}
+.wchb.ck{background:var(--primary);border-color:var(--primary);color:#fff}
+.wcal{background:#fff;border:1px solid #e2e8f0;border-radius:13px;padding:14px;text-align:center}
+.wcalh{font-weight:700;font-size:15px;margin-bottom:8px}
+.wcalg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.wcald{padding:7px;border-radius:7px;text-align:center;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.15s}
+.wcald:hover{background:var(--plight)}
+.wcald.sel{background:var(--primary);color:#fff}
+.wcald.tdy{border:2px solid var(--primary)}
+.wfab{width:52px;height:52px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:all 0.2s;position:absolute;bottom:16px;right:16px}
+.wfab:hover{transform:scale(1.08)}
+#rp{width:350px;background:var(--bg);border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0}
+.ie{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#cbd5e1;text-align:center;gap:10px;padding:40px}
+.ic{padding:14px}
+.ih{font-weight:800;font-size:14px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.ps{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.ps:last-child{border-bottom:none}
+.pl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--t2);margin-bottom:3px}
+.pin,.psel,.pta{width:100%;padding:9px 12px;border:2px solid var(--border);border-radius:9px;font-size:12px;font-family:inherit;font-weight:500;background:var(--surface);transition:all 0.2s}
+.pin:focus,.psel:focus,.pta:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(124,58,237,0.1)}
+.cr{display:flex;gap:7px}
+.cb{width:40px;height:40px;border:2px solid var(--border);border-radius:9px;cursor:pointer;padding:2px}
+.ib{margin-top:6px;padding:10px;background:#f0fdf4;border:2px solid #bbf7d0;border-radius:11px;font-size:10px;line-height:1.5;color:#166534}
+.ib h4{margin-bottom:3px;font-size:12px}
+#tc{position:fixed;top:76px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.tm{background:#1e293b;color:#fff;padding:10px 18px;border-radius:25px;font-size:12px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,0.3);animation:si 0.3s ease;pointer-events:auto}
+@keyframes si{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+#ho{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center}
+#ho.sh{display:flex}
+.hc{background:#fff;border-radius:18px;padding:28px;max-width:620px;max-height:78vh;overflow-y:auto;box-shadow:0 18px 50px rgba(0,0,0,0.3)}
+.hc h2{margin-bottom:12px;font-size:20px}
+.hc h3{font-size:14px;margin:12px 0 5px;color:var(--primary)}
+.hc p{font-size:12px;line-height:1.6;color:var(--t2);margin-bottom:5px}
+.hc ul{padding-left:18px;font-size:12px;line-height:1.7;color:var(--t2)}
+.hc kbd{background:#f1f5f9;padding:1px 7px;border-radius:3px;font-size:10px;font-weight:700;border:1px solid #cbd5e1}
+</style>
 </head>
 <body>
-    <div id="app">
-        <!-- TOOLBAR -->
-        <div id="toolbar">
-            <div style="display:flex;align-items:center;gap:16px;">
-                <span class="logo"><span>🚀 App Free Builder Pro</span></span>
-                <span id="widgetCount" style="font-size:12px;color:#64748b;font-weight:600;"></span>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;">
-                <input type="text" id="projectName" value="MyApp" placeholder="Название">
-                <button class="btn btn-outline btn-sm" onclick="loadExample()">📥 Пример</button>
-                <button class="btn btn-outline btn-sm" onclick="clearAll()">🧹 Очистить</button>
-                <button class="btn btn-outline btn-sm" onclick="saveProject()">💾 Сохранить</button>
-                <button class="btn btn-outline btn-sm" onclick="loadProject()">📂 Загрузить</button>
-                <button class="btn btn-outline btn-sm" onclick="showHelp()">❓ Как работает</button>
-                <button class="btn btn-success" onclick="downloadProject()">📦 Скачать</button>
-            </div>
-        </div>
+<div id="app">
+<div id="tb">
+<div style="display:flex;align-items:center;gap:10px"><span class="logo"><span>🚀 App Free Builder Pro</span></span><span id="wc" style="font-size:10px;color:var(--t2);font-weight:600"></span></div>
+<div style="display:flex;gap:5px;align-items:center">
+<input id="pn" value="MyApp" placeholder="Название">
+<button class="btn btn6 btn-sm" onclick="loadExample()">📥 Пример</button>
+<button class="btn btn3 btn-sm" onclick="clearAll()">🧹</button>
+<button class="btn btn3 btn-sm" onclick="saveProject()">💾</button>
+<button class="btn btn3 btn-sm" onclick="loadProject()">📂</button>
+<button class="btn btn3 btn-sm" onclick="showHelp()">❓</button>
+<button class="btn btn2" onclick="downloadProject()">📦 Скачать</button>
+</div></div>
+<div id="main">
+<div id="lp"></div>
+<div id="pa"><div id="pf"><div id="pfc"></div><div id="psb"><span>9:41</span><span>📶 🔋</span></div><div id="pab">Моё приложение</div><div id="pct"><div class="ep"><div style="font-size:55px">📱</div><div style="font-weight:700;font-size:14px">Перетащите компоненты сюда</div><div style="font-size:11px">Из панели слева</div></div></div></div></div>
+<div id="rp"><div class="ie"><div style="font-size:45px">👈</div><div style="font-weight:700">Выберите компонент</div><div style="font-size:11px">Кликните по элементу в телефоне</div></div></div>
+</div>
+<div id="tc"></div>
+</div>
+<div id="ho"><div class="hc"><div style="display:flex;justify-content:space-between;align-items:center"><h2>📚 Как работать</h2><button class="btn btn4 btn-sm" onclick="closeHelp()">✕</button></div>
+<h3>🎯 Основное</h3><p>Визуальный конструктор Android-приложений. Собираете экран, настраиваете, тестируете и скачиваете готовый проект.</p>
+<h3>🖱️ Добавление</h3><p>Перетащите компонент из левой панели в телефон.</p>
+<h3>↕️ Перемещение</h3><p>Зажмите компонент в телефоне и тяните вверх/вниз — он меняется местами с соседними.</p>
+<h3>⚙️ Настройка</h3><p>Кликните по компоненту — справа откроются свойства. Меняйте цвет, размер, текст.</p>
+<h3>⚡ Действия</h3><p>Каждому компоненту можно задать действие: показать Toast, открыть ссылку, позвонить и другие. Выберите в выпадающем списке "Действие".</p>
+<h3>🧪 Тестирование</h3><p>Кнопки, свитчи, слайдеры, поля ввода — всё работает прямо в телефоне! Нажимайте, переключайте, проверяйте.</p>
+<h3>📦 Скачивание</h3><p>Кнопка "Скачать" создаёт полный проект Android Studio со всеми обработчиками и готовым кодом.</p>
+<h3>⌨️ Клавиши</h3><p><kbd>Delete</kbd> — удалить компонент. <kbd>Escape</kbd> — снять выделение.</p>
+<p style="margin-top:16px;font-weight:700;color:var(--primary)">🎉 Начинайте строить приложение!</p></div></div>
+<script>
+const COMPS=[
+{type:'text',label:'Текст',icon:'📝',cat:'Базовые',props:{content:'Привет мир!',fontSize:16,fontWeight:'600',color:'#1e293b'},actions:['showToast','copyToClipboard']},
+{type:'button',label:'Кнопка',icon:'🔘',cat:'Базовые',props:{label:'Нажми',bgColor:'#7c3aed',textColor:'#fff',fontSize:15,borderRadius:10,height:50},actions:['showToast','showAlert','openURL','makeCall','sendEmail','shareText','saveToDB','loadFromDB','apiGet','apiPost','vibrate','navigateTo','customCode']},
+{type:'input',label:'Поле ввода',icon:'⌨️',cat:'Ввод',props:{placeholder:'Введите...',fontSize:14,borderColor:'#e2e8f0',borderRadius:10,isPassword:false},actions:['onTextChanged']},
+{type:'image',label:'Картинка',icon:'🖼️',cat:'Медиа',props:{src:'https://picsum.photos/300/200',height:180,borderRadius:12},actions:['showToast','openURL']},
+{type:'card',label:'Карточка',icon:'🃏',cat:'Медиа',props:{title:'Заголовок',subtitle:'Описание',bgColor:'#fff',borderRadius:14,elevation:3},actions:['showToast','showAlert','navigateTo']},
+{type:'switch',label:'Переключатель',icon:'🔛',cat:'Формы',props:{label:'Включить',value:false,activeColor:'#7c3aed'},actions:['onCheckedChanged','saveToDB']},
+{type:'slider',label:'Слайдер',icon:'🎚️',cat:'Формы',props:{label:'Значение',value:50,min:0,max:100,activeColor:'#7c3aed'},actions:['onValueChanged']},
+{type:'checkbox',label:'Чекбокс',icon:'☑️',cat:'Формы',props:{label:'Согласен',checked:false,color:'#7c3aed'},actions:['onCheckedChanged']},
+{type:'radio',label:'Радио',icon:'🔘',cat:'Формы',props:{label:'Вариант 1',selected:false,color:'#7c3aed',group:'group1'},actions:['onSelected']},
+{type:'calendar',label:'Календарь',icon:'📅',cat:'Формы',props:{selectedDate:'',highlightToday:true},actions:['onDateSelected']},
+{type:'progress',label:'Прогресс',icon:'📊',cat:'Индикаторы',props:{value:60,color:'#7c3aed'},actions:[]},
+{type:'listview',label:'Список',icon:'📋',cat:'Структура',props:{items:['Элемент 1','Элемент 2','Элемент 3']},actions:['onItemClick','showToast']},
+{type:'container',label:'Контейнер',icon:'📦',cat:'Layout',props:{width:'100%',height:100,bgColor:'#f5f3ff',borderRadius:12,padding:16},actions:['showToast']},
+{type:'avatar',label:'Аватар',icon:'👤',cat:'Базовые',props:{text:'A',bgColor:'#7c3aed',size:50},actions:['showToast']},
+{type:'fab',label:'FAB кнопка',icon:'➕',cat:'Кнопки',props:{icon:'+',bgColor:'#7c3aed',size:56},actions:['showToast','navigateTo','openURL','customCode']},
+{type:'divider',label:'Разделитель',icon:'➖',cat:'Layout',props:{color:'#e2e8f0',thickness:1},actions:[]},
+{type:'spacer',label:'Отступ',icon:'⬜',cat:'Layout',props:{height:20},actions:[]},
+{type:'appbar',label:'Шапка',icon:'📱',cat:'Структура',props:{title:'Моё приложение',bgColor:'#7c3aed',textColor:'#fff'},actions:['onBackPressed']},
+];
+let widgets=[],selId=null,ctr=1;
 
-        <!-- MAIN -->
-        <div id="mainContent">
-            <!-- LEFT -->
-            <div id="componentPanel"></div>
-            <!-- CENTER -->
-            <div id="previewArea">
-                <div id="phoneFrame">
-                    <div id="phoneNotch"></div>
-                    <div id="phoneStatusBar"><span>9:41</span><span>📶 🔋</span></div>
-                    <div id="phoneAppBar">Моё приложение</div>
-                    <div id="phoneContent">
-                        <div class="empty-phone">
-                            <div style="font-size:60px;">📱</div>
-                            <div style="font-weight:700;font-size:15px;">Перетащите компоненты сюда</div>
-                            <div style="font-size:12px;">Из панели слева</div>
-                            <button class="btn btn-warning btn-sm" onclick="loadExample()" style="margin-top:8px;">Загрузить пример приложения</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- RIGHT -->
-            <div id="inspectorPanel">
-                <div class="insp-empty">
-                    <div style="font-size:50px;">👈</div>
-                    <div style="font-weight:700;">Выберите компонент</div>
-                    <div>Кликните по элементу в телефоне</div>
-                    <div style="font-size:12px;color:#94a3b8;">Его можно двигать зажав мышкой</div>
-                </div>
-            </div>
-        </div>
-        <div id="toast"></div>
-    </div>
-
-    <!-- HELP MODAL -->
-    <div id="helpModal">
-        <div class="modal-content">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <h2>📚 Как работает App Free Builder Pro</h2>
-                <button class="btn btn-danger btn-sm" onclick="closeHelp()">✕</button>
-            </div>
-            
-            <h3>🎯 Основная идея</h3>
-            <p>Это визуальный конструктор Android-приложений. Вы собираете экран из готовых компонентов, настраиваете их внешний вид и поведение, а затем скачиваете готовый XML-файл для Android Studio.</p>
-            
-            <h3>🖱️ Drag & Drop компонентов</h3>
-            <ul>
-                <li><b>Добавление:</b> Хватаете компонент слева и перетаскиваете в телефон. Он появится внизу списка.</li>
-                <li><b>Перемещение внутри телефона:</b> Зажмите компонент мышкой и тяните вверх или вниз — он поменяется местами с соседними. Зелёная линия показывает, куда встанет элемент.</li>
-                <li><b>Клик по компоненту:</b> Выделяет его и открывает редактор свойств справа.</li>
-            </ul>
-            
-            <h3>⚙️ Редактор свойств (справа)</h3>
-            <ul>
-                <li>Меняйте <b>текст, цвет, размер, шрифт</b> и другие параметры.</li>
-                <li>Для цветов есть удобный <kbd>color picker</kbd> — просто кликните на квадратик.</li>
-                <li>Все изменения видны <b>сразу в телефоне</b>.</li>
-            </ul>
-            
-            <h3>⚡ Функции компонентов</h3>
-            <ul>
-                <li>У каждого компонента есть раздел <b>"Функции"</b> в редакторе.</li>
-                <li><b>Кнопка:</b> onClick (действие при клике), onLongClick, navigateTo (переход на экран)</li>
-                <li><b>Поле ввода:</b> onTextChanged (реакция на ввод), onSubmit</li>
-                <li><b>Переключатель:</b> onCheckedChanged (реакция на переключение)</li>
-                <li><b>Слайдер:</b> onValueChanged (реакция на изменение)</li>
-                <li><b>Картинка/Текст/Карточка:</b> onClick (реагируют на нажатие)</li>
-                <li>Нажмите на чипсы с названиями функций, чтобы <b>включить/выключить</b> их.</li>
-            </ul>
-            
-            <h3>💾 Сохранение</h3>
-            <ul>
-                <li>Проект <b>автоматически сохраняется</b> в браузере (localStorage).</li>
-                <li>Кнопка <kbd>💾 Сохранить</kbd> — принудительное сохранение.</li>
-                <li>Кнопка <kbd>📂 Загрузить</kbd> — восстановить последнее сохранение.</li>
-            </ul>
-            
-            <h3>📥 Готовый пример</h3>
-            <ul>
-                <li>Нажмите <kbd>📥 Пример</kbd> — загрузится готовое приложение с кнопкой, текстом, полем ввода и переключателем.</li>
-                <li>Это покажет, как компоненты работают вместе.</li>
-            </ul>
-            
-            <h3>📦 Скачивание</h3>
-            <ul>
-                <li>Кнопка <kbd>📦 Скачать</kbd> генерирует XML-файл разметки Android.</li>
-                <li>Его можно сразу скопировать в проект Android Studio в <kbd>res/layout/activity_main.xml</kbd>.</li>
-            </ul>
-            
-            <h3>⌨️ Горячие клавиши</h3>
-            <ul>
-                <li><kbd>Delete</kbd> — удалить выделенный компонент</li>
-                <li><kbd>Escape</kbd> — снять выделение</li>
-            </ul>
-            
-            <p style="margin-top:20px;font-weight:700;color:var(--primary);">🎉 Всё готово! Начинайте строить своё приложение!</p>
-        </div>
-    </div>
-
-    <script>
-        // ==================== ДАННЫЕ ====================
-        const COMPONENTS = [
-            { type:'text', label:'Текст', icon:'📝', cat:'Базовые',
-              props:{ content:'Привет мир!', fontSize:16, fontWeight:'600', color:'#1e293b' },
-              functions:['onClick'] },
-            { type:'button', label:'Кнопка', icon:'🔘', cat:'Базовые',
-              props:{ label:'Нажми меня', bgColor:'#7c3aed', textColor:'#ffffff', fontSize:15, borderRadius:10, height:50, onClick:'' },
-              functions:['onClick','onLongClick','navigateTo'] },
-            { type:'input', label:'Поле ввода', icon:'⌨️', cat:'Ввод',
-              props:{ placeholder:'Введите текст...', fontSize:14, borderColor:'#e2e8f0', borderRadius:10, isPassword:false, onTextChanged:'' },
-              functions:['onTextChanged','onSubmit'] },
-            { type:'image', label:'Картинка', icon:'🖼️', cat:'Медиа',
-              props:{ src:'https://picsum.photos/300/200', height:180, borderRadius:12 },
-              functions:['onClick'] },
-            { type:'card', label:'Карточка', icon:'🃏', cat:'Медиа',
-              props:{ title:'Заголовок', subtitle:'Описание карточки', bgColor:'#ffffff', borderRadius:14, elevation:3 },
-              functions:['onClick'] },
-            { type:'switch', label:'Переключатель', icon:'🔛', cat:'Формы',
-              props:{ label:'Включить', value:false, activeColor:'#7c3aed', onCheckedChanged:'' },
-              functions:['onCheckedChanged'] },
-            { type:'slider', label:'Слайдер', icon:'🎚️', cat:'Формы',
-              props:{ label:'Значение', value:50, min:0, max:100, activeColor:'#7c3aed', onValueChanged:'' },
-              functions:['onValueChanged'] },
-            { type:'container', label:'Контейнер', icon:'📦', cat:'Layout',
-              props:{ width:'100%', height:100, bgColor:'#f5f3ff', borderRadius:12, padding:16 },
-              functions:[] },
-            { type:'avatar', label:'Аватар', icon:'👤', cat:'Базовые',
-              props:{ text:'A', bgColor:'#7c3aed', size:50 },
-              functions:['onClick'] },
-            { type:'listview', label:'Список', icon:'📋', cat:'Структура',
-              props:{ items:['Элемент 1','Элемент 2','Элемент 3'] },
-              functions:['onItemClick'] },
-            { type:'appbar', label:'Шапка', icon:'📱', cat:'Структура',
-              props:{ title:'Моё приложение', bgColor:'#7c3aed', textColor:'#ffffff' },
-              functions:['onBackPressed'] },
-        ];
-
-        let widgets = [];
-        let selectedId = null;
-        let counter = 1;
-        let dragWidgetId = null;
-        let dropIndex = -1;
-
-        // ==================== ОТРИСОВКА ПАНЕЛИ ====================
-        function renderPanel() {
-            const panel = document.getElementById('componentPanel');
-            const cats = [...new Set(COMPONENTS.map(c => c.cat))];
-            let h = '';
-            cats.forEach(cat => {
-                h += `<div class="cat-title">${cat}</div><div class="comp-grid">`;
-                COMPONENTS.filter(c => c.cat === cat).forEach(c => {
-                    h += `<div class="comp-item" draggable="true" data-type="${c.type}" ondragstart="onDragFromPanel(event,'${c.type}')"><span class="comp-icon">${c.icon}</span><span>${c.label}</span></div>`;
-                });
-                h += `</div>`;
-            });
-            panel.innerHTML = h;
-        }
-
-        function onDragFromPanel(e, type) {
-            e.dataTransfer.setData('text/plain', type);
-            e.dataTransfer.effectAllowed = 'copy';
-        }
-
-        // ==================== DROP ZONE ====================
-        function setupDropZone() {
-            const zone = document.getElementById('phoneContent');
-            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-            zone.addEventListener('drop', e => {
-                e.preventDefault();
-                zone.classList.remove('drag-over');
-                const type = e.dataTransfer.getData('text/plain');
-                if (type && isComponentType(type)) {
-                    addWidget(type);
-                }
-            });
-        }
-
-        function isComponentType(type) {
-            return COMPONENTS.some(c => c.type === type);
-        }
-
-        // ==================== ДОБАВЛЕНИЕ ====================
-        function addWidget(type) {
-            const def = COMPONENTS.find(c => c.type === type);
-            if (!def) return;
-            const w = {
-                id: counter++,
-                type: def.type,
-                label: def.label,
-                props: JSON.parse(JSON.stringify(def.props)),
-                activeFunctions: [],
-            };
-            widgets.push(w);
-            renderPhone();
-            selectWidget(w.id);
-            showToast('✅ ' + def.label + ' добавлен');
-            saveProject();
-        }
-
-        // ==================== ОТРИСОВКА ТЕЛЕФОНА ====================
-        function renderPhone() {
-            const cont = document.getElementById('phoneContent');
-            const appbar = widgets.find(w => w.type === 'appbar');
-            const ab = document.getElementById('phoneAppBar');
-            
-            if (appbar) {
-                ab.textContent = appbar.props.title;
-                ab.style.background = appbar.props.bgColor;
-                ab.style.color = appbar.props.textColor;
-                ab.style.display = '';
-            } else {
-                ab.style.display = 'none';
-            }
-            
-            const others = widgets.filter(w => w.type !== 'appbar');
-            if (others.length === 0) {
-                cont.innerHTML = `<div class="empty-phone"><div style="font-size:60px;">📱</div><div style="font-weight:700;">Перетащите компоненты сюда</div><button class="btn btn-warning btn-sm" onclick="loadExample()" style="margin-top:8px;">Загрузить пример</button></div>`;
-            } else {
-                cont.innerHTML = others.map((w, idx) => {
-                    const sel = w.id === selectedId ? ' selected' : '';
-                    const func = w.activeFunctions && w.activeFunctions.length > 0 ? ' has-function' : '';
-                    return `<div class="widget-wrapper${sel}${func}" data-id="${w.id}" data-index="${idx}" 
-                                onmousedown="onWidgetMouseDown(event, ${w.id})"
-                                onclick="event.stopPropagation(); selectWidget(${w.id});">
-                                ${renderWidgetHTML(w)}
-                            </div>`;
-                }).join('');
-                
-                // Перетаскивание внутри телефона
-                cont.querySelectorAll('.widget-wrapper').forEach(el => {
-                    el.addEventListener('dragover', onWidgetDragOver);
-                    el.addEventListener('dragleave', onWidgetDragLeave);
-                    el.addEventListener('drop', onWidgetDrop);
-                    el.setAttribute('draggable', 'true');
-                    el.addEventListener('dragstart', onWidgetDragStart);
-                    el.addEventListener('dragend', onWidgetDragEnd);
-                });
-            }
-            updateCount();
-        }
-
-        function renderWidgetHTML(w) {
-            const p = w.props;
-            switch(w.type) {
-                case 'text': return `<div class="w-text" style="font-size:${p.fontSize}px;font-weight:${p.fontWeight};color:${p.color};">${esc(p.content)}</div>`;
-                case 'button': return `<div class="w-button" style="height:${p.height}px;background:${p.bgColor};color:${p.textColor};font-size:${p.fontSize}px;border-radius:${p.borderRadius}px;">${esc(p.label)}</div>`;
-                case 'input': return `<input class="w-input" type="${p.isPassword?'password':'text'}" placeholder="${esc(p.placeholder)}" style="font-size:${p.fontSize}px;border-color:${p.borderColor};border-radius:${p.borderRadius}px;" readonly>`;
-                case 'image': return `<div class="w-image" style="height:${p.height}px;border-radius:${p.borderRadius}px;">${p.src ? '<img src="'+p.src+'" style="width:100%;height:100%;object-fit:cover;border-radius:'+p.borderRadius+'px;" onerror="this.style.display=\'none\'">' : '🖼️'}</div>`;
-                case 'card': return `<div class="w-card" style="background:${p.bgColor};border-radius:${p.borderRadius}px;box-shadow:0 ${p.elevation}px ${p.elevation*2}px rgba(0,0,0,0.08);"><div style="font-size:17px;font-weight:700;margin-bottom:4px;">${esc(p.title)}</div><div style="font-size:13px;color:#64748b;">${esc(p.subtitle)}</div></div>`;
-                case 'switch': return `<div class="w-switch-row"><span style="font-weight:500;">${esc(p.label)}</span><div class="w-switch-track" style="background:${p.value ? p.activeColor : '#cbd5e1'};"><div class="w-switch-thumb" style="left:${p.value ? '22px' : '2px'};"></div></div></div>`;
-                case 'slider': return `<div class="w-slider-wrap"><div style="font-size:13px;font-weight:600;">${esc(p.label)}: ${p.value}%</div><div class="w-slider-track"><div class="w-slider-fill" style="width:${p.value}%;background:${p.activeColor};"></div><div class="w-slider-thumb" style="left:calc(${p.value}% - 11px);background:${p.activeColor};"></div></div></div>`;
-                case 'container': return `<div class="w-container" style="width:${p.width};height:${p.height}px;background:${p.bgColor};border-radius:${p.borderRadius}px;padding:${p.padding}px;">📦 Контейнер</div>`;
-                case 'avatar': return `<div class="w-avatar" style="width:${p.size}px;height:${p.size}px;background:${p.bgColor};font-size:${p.size/2.5}px;">${p.text}</div>`;
-                case 'listview': {
-                    const items = Array.isArray(p.items) ? p.items : ['Элемент 1'];
-                    return `<div class="w-listview">${items.map(it => '<div class="w-listview-item">'+esc(it)+'</div>').join('')}</div>`;
-                }
-                default: return `<div style="padding:10px;background:#f1f5f9;border-radius:8px;">${w.label}</div>`;
-            }
-        }
-
-        function esc(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
-
-        // ==================== DRAG ВНУТРИ ТЕЛЕФОНА ====================
-        function onWidgetMouseDown(e, id) {
-            if (e.target.tagName === 'INPUT') return;
-            dragWidgetId = id;
-        }
-
-        function onWidgetDragStart(e) {
-            const wrapper = e.target.closest('.widget-wrapper');
-            if (!wrapper) { e.preventDefault(); return; }
-            dragWidgetId = parseInt(wrapper.dataset.id);
-            e.dataTransfer.setData('text/plain', 'move');
-            e.dataTransfer.effectAllowed = 'move';
-            wrapper.style.opacity = '0.4';
-        }
-
-        function onWidgetDragEnd(e) {
-            const wrapper = e.target.closest('.widget-wrapper');
-            if (wrapper) wrapper.style.opacity = '1';
-            document.querySelectorAll('#phoneContent .widget-wrapper').forEach(el => {
-                el.style.borderTop = '';
-            });
-            dragWidgetId = null;
-            dropIndex = -1;
-        }
-
-        function onWidgetDragOver(e) {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            const wrapper = e.target.closest('.widget-wrapper');
-            if (wrapper && dragWidgetId) {
-                const idx = parseInt(wrapper.dataset.index);
-                dropIndex = idx;
-                document.querySelectorAll('#phoneContent .widget-wrapper').forEach(el => el.style.borderTop = '');
-                wrapper.style.borderTop = '3px solid #10b981';
-            }
-        }
-
-        function onWidgetDragLeave(e) {
-            e.target.closest('.widget-wrapper')?.style && (e.target.closest('.widget-wrapper').style.borderTop = '');
-        }
-
-        function onWidgetDrop(e) {
-            e.preventDefault();
-            document.querySelectorAll('#phoneContent .widget-wrapper').forEach(el => el.style.borderTop = '');
-            if (!dragWidgetId) return;
-            
-            const wrapper = e.target.closest('.widget-wrapper');
-            if (!wrapper) return;
-            
-            const targetIdx = parseInt(wrapper.dataset.index);
-            moveWidget(dragWidgetId, targetIdx);
-            dragWidgetId = null;
-            dropIndex = -1;
-        }
-
-        function moveWidget(id, targetIdx) {
-            const others = widgets.filter(w => w.type !== 'appbar');
-            const appbar = widgets.filter(w => w.type === 'appbar');
-            const idx = others.findIndex(w => w.id === id);
-            if (idx === -1 || idx === targetIdx) return;
-            
-            const [moved] = others.splice(idx, 1);
-            others.splice(targetIdx, 0, moved);
-            
-            widgets = [...appbar, ...others];
-            renderPhone();
-            saveProject();
-            showToast('↕️ Порядок изменён');
-        }
-
-        // ==================== ВЫБОР ====================
-        function selectWidget(id) {
-            selectedId = id;
-            renderPhone();
-            renderInspector();
-        }
-
-        document.addEventListener('click', e => {
-            if (!e.target.closest('.widget-wrapper') && !e.target.closest('#inspectorPanel') && !e.target.closest('#componentPanel') && !e.target.closest('.btn')) {
-                selectedId = null;
-                renderPhone();
-                renderInspector();
-            }
-        });
-
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Delete' && selectedId) {
-                deleteWidget(selectedId);
-            }
-            if (e.key === 'Escape') {
-                selectedId = null;
-                renderPhone();
-                renderInspector();
-            }
-        });
-
-        // ==================== ИНСПЕКТОР ====================
-        function renderInspector() {
-            const panel = document.getElementById('inspectorPanel');
-            const w = widgets.find(w => w.id === selectedId);
-            if (!w) {
-                panel.innerHTML = '<div class="insp-empty"><div style="font-size:50px;">👈</div><div style="font-weight:700;">Выберите компонент</div><div>Кликните по элементу в телефоне</div><div style="font-size:12px;color:#94a3b8;">Его можно двигать зажав мышкой</div></div>';
-                return;
-            }
-            
-            let h = `<div class="insp-content"><div class="insp-header"><span>⚙️ ${w.label}</span><button class="btn btn-danger btn-sm" onclick="deleteWidget(${w.id})">🗑️ Удалить</button></div>`;
-            
-            // ФУНКЦИИ
-            const compDef = COMPONENTS.find(c => c.type === w.type);
-            if (compDef && compDef.functions && compDef.functions.length > 0) {
-                h += `<div class="prop-section"><div class="prop-label">⚡ Функции компонента</div>`;
-                compDef.functions.forEach(fn => {
-                    const isActive = w.activeFunctions && w.activeFunctions.includes(fn);
-                    h += `<span class="func-chip${isActive ? ' active' : ''}" onclick="toggleFunction(${w.id},'${fn}')">${fn}</span>`;
-                });
-                h += `<div class="info-box" style="margin-top:8px;"><h4>💡 Как работают функции</h4><p>Включённые функции будут добавлены в код при скачивании. Например, <b>onClick</b> создаст обработчик нажатия на кнопку. Настройте действие в поле ниже.</p></div>`;
-                h += `</div>`;
-            }
-            
-            // СВОЙСТВА
-            Object.entries(w.props).forEach(([key, val]) => {
-                // Пропускаем свойства-функции
-                if (['onClick','onLongClick','navigateTo','onTextChanged','onSubmit','onCheckedChanged','onValueChanged','onBackPressed','onItemClick'].includes(key)) {
-                    h += `<div class="prop-section"><div class="prop-label">⚡ ${key}</div>`;
-                    h += `<textarea class="prop-textarea" rows="3" onchange="updateProp(${w.id},'${key}',this.value)">${val || ''}</textarea>`;
-                    h += `<div style="font-size:10px;color:#64748b;margin-top:4px;">Пример: showToast("Готово!")</div>`;
-                    h += `</div>`;
-                    return;
-                }
-                
-                h += `<div class="prop-section"><div class="prop-label">${labelMap(key)}</div>`;
-                if (typeof val === 'string' && key.includes('olor')) {
-                    h += `<div class="color-row"><input type="color" class="color-box" value="${val}" onchange="updateProp(${w.id},'${key}',this.value)"><input class="prop-input" style="flex:1" value="${val}" onchange="updateProp(${w.id},'${key}',this.value)"></div>`;
-                } else if (typeof val === 'boolean') {
-                    h += `<select class="prop-select" onchange="updateProp(${w.id},'${key}',this.value==='true')"><option value="true" ${val?'selected':''}>Да</option><option value="false" ${!val?'selected':''}>Нет</option></select>`;
-                } else if (typeof val === 'number') {
-                    h += `<input type="number" class="prop-input" value="${val}" onchange="updateProp(${w.id},'${key}',Number(this.value))">`;
-                } else if (key === 'items') {
-                    h += `<textarea class="prop-textarea" rows="4" onchange="updateProp(${w.id},'${key}',this.value.split('\\n'))">${Array.isArray(val) ? val.join('\n') : val}</textarea>`;
-                } else {
-                    h += `<input class="prop-input" value="${esc(String(val))}" onchange="updateProp(${w.id},'${key}',this.value)">`;
-                }
-                h += `</div>`;
-            });
-            
-            h += `</div>`;
-            panel.innerHTML = h;
-        }
-
-        function toggleFunction(widgetId, funcName) {
-            const w = widgets.find(w => w.id === widgetId);
-            if (!w) return;
-            if (!w.activeFunctions) w.activeFunctions = [];
-            if (w.activeFunctions.includes(funcName)) {
-                w.activeFunctions = w.activeFunctions.filter(f => f !== funcName);
-            } else {
-                w.activeFunctions.push(funcName);
-            }
-            renderPhone();
-            renderInspector();
-            saveProject();
-        }
-
-        function labelMap(key) {
-            const m = {
-                content:'📝 Текст', label:'🏷️ Название', title:'📌 Заголовок', subtitle:'📄 Подзаголовок',
-                placeholder:'💡 Подсказка', text:'📝 Текст', fontSize:'🔤 Размер шрифта',
-                fontWeight:'🔤 Жирность', bgColor:'🎨 Фон', textColor:'🎨 Цвет текста',
-                color:'🎨 Цвет', activeColor:'🎨 Активный', borderColor:'🎨 Рамка',
-                width:'↔️ Ширина', height:'↕️ Высота', size:'📏 Размер',
-                borderRadius:'📐 Скругление', padding:'📏 Отступы', elevation:'📶 Тень',
-                src:'🖼️ URL', value:'📊 Значение', min:'⬇️ Мин', max:'⬆️ Макс',
-                isPassword:'🔒 Пароль', items:'📋 Элементы',
-            };
-            return m[key] || key;
-        }
-
-        function updateProp(id, key, value) {
-            const w = widgets.find(w => w.id === id);
-            if (!w) return;
-            w.props[key] = value;
-            renderPhone();
-            saveProject();
-        }
-
-        function deleteWidget(id) {
-            widgets = widgets.filter(w => w.id !== id);
-            if (selectedId === id) selectedId = null;
-            renderPhone();
-            renderInspector();
-            saveProject();
-            showToast('🗑️ Удалено');
-        }
-
-        function clearAll() {
-            if (!widgets.length) return;
-            if (confirm('Удалить все компоненты?')) {
-                widgets = []; selectedId = null;
-                renderPhone(); renderInspector(); saveProject();
-                showToast('🧹 Очищено');
-            }
-        }
-
-        // ==================== ПРИМЕР ====================
-        function loadExample() {
-            widgets = [];
-            counter = 1;
-            
-            // AppBar
-            addWidgetSilent('appbar');
-            const ab = widgets[0];
-            ab.props = { title:'Пример приложения', bgColor:'#7c3aed', textColor:'#ffffff' };
-            
-            // Текст приветствия
-            addWidgetSilent('text');
-            widgets[1].props = { content:'Добро пожаловать! 👋', fontSize:20, fontWeight:'700', color:'#1e293b' };
-            
-            // Карточка
-            addWidgetSilent('card');
-            widgets[2].props = { title:'Карточка профиля', subtitle:'Это пример карточки с тенью', bgColor:'#ffffff', borderRadius:14, elevation:4 };
-            widgets[2].activeFunctions = ['onClick'];
-            
-            // Поле ввода
-            addWidgetSilent('input');
-            widgets[3].props = { placeholder:'Введите ваше имя...', fontSize:14, borderColor:'#e2e8f0', borderRadius:10, isPassword:false };
-            widgets[3].activeFunctions = ['onTextChanged'];
-            
-            // Кнопка
-            addWidgetSilent('button');
-            widgets[4].props = { label:'Сохранить', bgColor:'#10b981', textColor:'#ffffff', fontSize:16, borderRadius:12, height:54, onClick:'saveData()' };
-            widgets[4].activeFunctions = ['onClick'];
-            
-            // Переключатель
-            addWidgetSilent('switch');
-            widgets[5].props = { label:'Тёмная тема', value:false, activeColor:'#7c3aed' };
-            widgets[5].activeFunctions = ['onCheckedChanged'];
-            
-            selectedId = null;
-            renderPhone();
-            renderInspector();
-            saveProject();
-            showToast('📥 Пример загружен! Изучайте и меняйте');
-        }
-
-        function addWidgetSilent(type) {
-            const def = COMPONENTS.find(c => c.type === type);
-            if (!def) return;
-            widgets.push({
-                id: counter++,
-                type: def.type,
-                label: def.label,
-                props: JSON.parse(JSON.stringify(def.props)),
-                activeFunctions: [],
-            });
-        }
-
-        // ==================== СОХРАНЕНИЕ ====================
-        function saveProject() {
-            localStorage.setItem('appbuilder_data', JSON.stringify({ widgets, counter }));
-        }
-        function loadProject() {
-            const raw = localStorage.getItem('appbuilder_data');
-            if (!raw) { showToast('📂 Нет сохранений'); return; }
-            try {
-                const d = JSON.parse(raw);
-                widgets = d.widgets || [];
-                counter = d.counter || 1;
-                selectedId = null;
-                renderPhone();
-                renderInspector();
-                showToast('📂 Загружено');
-            } catch(e) { showToast('❌ Ошибка'); }
-        }
-
-        // ==================== СКАЧИВАНИЕ ====================
-        function downloadProject() {
-            if (!widgets.length) { showToast('⚠️ Добавьте компоненты!'); return; }
-            const name = document.getElementById('projectName').value || 'MyApp';
-            
-            let xml = `<?xml version="1.0" encoding="utf-8"?>\n<!-- Создано в App Free Builder Pro -->\n<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp" android:background="#f8fafc">\n\n`;
-            
-            let java = `// MainActivity.java\npackage com.example.${name.toLowerCase()};\n\nimport android.os.Bundle;\nimport android.widget.*;\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n\n`;
-            
-            widgets.forEach((w, i) => {
-                if (w.type === 'appbar') return;
-                const id = `widget${i}`;
-                switch(w.type) {
-                    case 'text':
-                        xml += `    <TextView android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${esc(w.props.content)}" android:textColor="${w.props.color}" android:textSize="${w.props.fontSize}sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>\n\n`;
-                        if (w.activeFunctions?.includes('onClick')) java += `        findViewById(R.id.${id}).setOnClickListener(v -> Toast.makeText(this, "Текст нажат", Toast.LENGTH_SHORT).show());\n`;
-                        break;
-                    case 'button':
-                        xml += `    <Button android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="${w.props.height}dp" android:text="${esc(w.props.label)}" android:backgroundTint="${w.props.bgColor}" android:textColor="${w.props.textColor}" android:textSize="${w.props.fontSize}sp" app:cornerRadius="${w.props.borderRadius}dp" android:layout_marginBottom="12dp"/>\n\n`;
-                        if (w.activeFunctions?.includes('onClick')) java += `        findViewById(R.id.${id}).setOnClickListener(v -> { ${w.props.onClick || 'Toast.makeText(this, "Нажато!", Toast.LENGTH_SHORT).show();'} });\n`;
-                        break;
-                    case 'input':
-                        xml += `    <EditText android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="${esc(w.props.placeholder)}" android:textSize="${w.props.fontSize}sp" android:padding="14dp" android:inputType="${w.props.isPassword?'textPassword':'text'}" android:background="@drawable/edittext_bg" android:layout_marginBottom="12dp"/>\n\n`;
-                        break;
-                    case 'image':
-                        xml += `    <ImageView android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="${w.props.height}dp" android:scaleType="centerCrop" android:layout_marginBottom="12dp"/>\n\n`;
-                        break;
-                    case 'card':
-                        xml += `    <androidx.cardview.widget.CardView android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" app:cardElevation="${w.props.elevation}dp" app:cardCornerRadius="${w.props.borderRadius}dp" app:cardBackgroundColor="${w.props.bgColor}" android:padding="16dp" android:layout_marginBottom="12dp"><LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content"><TextView android:text="${esc(w.props.title)}" android:textSize="18sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/><TextView android:text="${esc(w.props.subtitle)}" android:textSize="14sp" android:textColor="#64748b" android:layout_width="wrap_content" android:layout_height="wrap_content"/></LinearLayout></androidx.cardview.widget.CardView>\n\n`;
-                        if (w.activeFunctions?.includes('onClick')) java += `        findViewById(R.id.${id}).setOnClickListener(v -> Toast.makeText(this, "Карточка нажата", Toast.LENGTH_SHORT).show());\n`;
-                        break;
-                    case 'switch':
-                        xml += `    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp"><TextView android:text="${esc(w.props.label)}" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:textSize="15sp"/><Switch android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content"/></LinearLayout>\n\n`;
-                        if (w.activeFunctions?.includes('onCheckedChanged')) java += `        ((Switch)findViewById(R.id.${id})).setOnCheckedChangeListener((btn, isChecked) -> Toast.makeText(this, "Переключатель: " + isChecked, Toast.LENGTH_SHORT).show());\n`;
-                        break;
-                    case 'slider':
-                        xml += `    <TextView android:id="@+id/${id}_label" android:text="${esc(w.props.label)}: ${w.props.value}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp"/><SeekBar android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="${w.props.max}" android:progress="${w.props.value}" android:layout_marginBottom="12dp"/>\n\n`;
-                        if (w.activeFunctions?.includes('onValueChanged')) java += `        ((SeekBar)findViewById(R.id.${id})).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() { public void onProgressChanged(SeekBar s, int p, boolean f) { ((TextView)findViewById(R.id.${id}_label)).setText("${esc(w.props.label)}: " + p); } public void onStartTrackingTouch(SeekBar s) {} public void onStopTrackingTouch(SeekBar s) {} });\n`;
-                        break;
-                    default:
-                        xml += `    <View android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="50dp" android:background="#f1f5f9" android:layout_marginBottom="12dp"/>\n\n`;
-                }
-            });
-            
-            xml += `</LinearLayout>`;
-            java += `    }\n}\n`;
-            
-            const full = `=== ПРОЕКТ ANDROID STUDIO ===\n=== ${name} ===\n\nСкопируйте содержимое ниже в соответствующие файлы:\n\n--- res/layout/activity_main.xml ---\n${xml}\n\n--- java/com/example/${name.toLowerCase()}/MainActivity.java ---\n${java}\n`;
-            
-            const blob = new Blob([full], {type:'text/plain;charset=utf-8'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = name + '_project.txt';
-            a.click();
-            showToast('📦 Проект скачан!');
-        }
-
-        // ==================== HELP ====================
-        function showHelp() { document.getElementById('helpModal').classList.add('show'); }
-        function closeHelp() { document.getElementById('helpModal').classList.remove('show'); }
-        document.getElementById('helpModal').addEventListener('click', e => { if (e.target.id === 'helpModal') closeHelp(); });
-
-        // ==================== TOAST ====================
-        function showToast(m) {
-            const t = document.getElementById('toast');
-            t.textContent = m; t.classList.add('show');
-            clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2500);
-        }
-
-        function updateCount() {
-            document.getElementById('widgetCount').textContent = widgets.length ? widgets.length + ' шт.' : '';
-        }
-
-        // ==================== ГЛОБАЛЬНЫЕ ====================
-        window.addWidget = addWidget;
-        window.selectWidget = selectWidget;
-        window.updateProp = updateProp;
-        window.deleteWidget = deleteWidget;
-        window.clearAll = clearAll;
-        window.toggleFunction = toggleFunction;
-        window.loadExample = loadExample;
-        window.saveProject = saveProject;
-        window.loadProject = loadProject;
-        window.downloadProject = downloadProject;
-        window.showHelp = showHelp;
-        window.closeHelp = closeHelp;
-
-        // ==================== ЗАПУСК ====================
-        renderPanel();
-        setupDropZone();
-        loadProject();
-        renderPhone();
-        updateCount();
-        console.log('🚀 App Free Builder Pro готов!');
-        console.log('📱 Перетаскивайте компоненты в телефон');
-        console.log('🖱️ Двигайте компоненты внутри телефона');
-        console.log('⚙️ Кликайте для настроек');
-        console.log('📥 Кнопка "Пример" загружает готовое приложение');
-        console.log('❓ Кнопка "Как работает" показывает инструкцию');
-    </script>
+function renderLP(){
+let h='';
+[...new Set(COMPS.map(c=>c.cat))].forEach(cat=>{
+h+=`<div class="ct">${cat}</div><div class="cg">`;
+COMPS.filter(c=>c.cat===cat).forEach(c=>{
+h+=`<div class="ci" draggable="true" data-type="${c.type}" ondragstart="dp(event,'${c.type}')"><span class="cic">${c.icon}</span><span>${c.label}</span></div>`;
+});
+h+=`</div>`;
+});
+document.getElementById('lp').innerHTML=h;
+}
+function dp(e,t){e.dataTransfer.setData('text/plain',t);e.dataTransfer.effectAllowed='copy';}
+function sd(){
+const z=document.getElementById('pct');
+z.addEventListener('dragover',e=>{e.preventDefault();z.classList.add('drag-over')});
+z.addEventListener('dragleave',()=>z.classList.remove('drag-over'));
+z.addEventListener('drop',e=>{
+e.preventDefault();z.classList.remove('drag-over');
+const t=e.dataTransfer.getData('text/plain');
+if(t&&COMPS.some(c=>c.type===t))addW(t);
+});
+}
+function addW(t){
+const d=COMPS.find(c=>c.type===t);if(!d)return;
+const w={id:ctr++,type:d.type,label:d.label,props:JSON.parse(JSON.stringify(d.props)),action:'',actionCode:''};
+widgets.push(w);renderPhone();sel(w.id);showToast('✅ '+d.label+' добавлен');saveP();
+}
+function renderPhone(){
+const ct=document.getElementById('pct');
+const ab=widgets.find(w=>w.type==='appbar');
+const abe=document.getElementById('pab');
+if(ab){abe.textContent=ab.props.title;abe.style.background=ab.props.bgColor;abe.style.color=ab.props.textColor;abe.style.display=''}
+else{abe.style.display='none'}
+const others=widgets.filter(w=>w.type!=='appbar');
+if(!others.length){
+ct.innerHTML='<div class="ep"><div style="font-size:55px">📱</div><div style="font-weight:700;font-size:14px">Перетащите компоненты</div></div>';
+}else{
+ct.innerHTML=others.map((w,i)=>{
+const sc=w.id===selId?' sel':'';
+const ac=w.action?' ha':'';
+return `<div class="ww${sc}${ac}" data-id="${w.id}" data-idx="${i}" draggable="true" ondragstart="wds(event,${w.id})" ondragover="wdo(event)" ondragleave="wdl(event)" ondrop="wd(event)" onclick="event.stopPropagation();sel(${w.id})">${rwh(w)}</div>`;
+}).join('');
+aEL();
+}
+document.getElementById('wc').textContent=widgets.length?widgets.length+' шт.':'';
+}
+function rwh(w){
+const p=w.props;
+switch(w.type){
+case'text':return `<div class="wt" style="font-size:${p.fontSize}px;font-weight:${p.fontWeight};color:${p.color}">${esc(p.content)}</div>`;
+case'button':return `<div class="wb" style="height:${p.height}px;background:${p.bgColor};color:${p.textColor};font-size:${p.fontSize}px;border-radius:${p.borderRadius}px" onmousedown="event.stopPropagation()" onclick="execAction(${w.id})">${esc(p.label)}</div>`;
+case'input':return `<input class="wi" type="${p.isPassword?'password':'text'}" placeholder="${esc(p.placeholder)}" style="font-size:${p.fontSize}px;border-color:${p.borderColor};border-radius:${p.borderRadius}px" onmousedown="event.stopPropagation()" oninput="execAction(${w.id})">`;
+case'image':return `<div class="wim" style="height:${p.height}px;border-radius:${p.borderRadius}px">${p.src?'<img src="'+p.src+'" style="width:100%;height:100%;object-fit:cover;border-radius:'+p.borderRadius+'px" onerror="this.style.display=\'none\'">':'🖼️'}</div>`;
+case'card':return `<div class="wcrd" style="background:${p.bgColor};border-radius:${p.borderRadius}px;box-shadow:0 ${p.elevation}px ${p.elevation*2}px rgba(0,0,0,0.07)" onclick="execAction(${w.id})"><div style="font-size:16px;font-weight:700;margin-bottom:3px">${esc(p.title)}</div><div style="font-size:12px;color:var(--t2)">${esc(p.subtitle)}</div></div>`;
+case'switch':return `<div class="wsr"><span style="font-weight:500">${esc(p.label)}</span><div class="wst" style="background:${p.value?p.activeColor:'#cbd5e1'}" onclick="event.stopPropagation();toggleSwitch(${w.id})"><div class="wsth" style="left:${p.value?'22px':'2px'}"></div></div></div>`;
+case'slider':return `<div class="wslw"><div style="font-size:12px;font-weight:600">${esc(p.label)}: ${p.value}%</div><div class="wslt" onclick="event.stopPropagation();updateSlider(event,${w.id})"><div class="wslf" style="width:${p.value}%;background:${p.activeColor}"></div><div class="wslth" style="left:calc(${p.value}% - 11px);background:${p.activeColor}"></div></div></div>`;
+case'checkbox':return `<div class="wch" onclick="event.stopPropagation();toggleCheck(${w.id})"><div class="wchb${p.checked?' ck':''}">${p.checked?'✓':''}</div><span style="font-weight:500">${esc(p.label)}</span></div>`;
+case'radio':return `<div class="wch" onclick="event.stopPropagation();selectRadio(${w.id})"><div class="wchb${p.selected?' ck':''}" style="border-radius:50%">${p.selected?'●':''}</div><span style="font-weight:500">${esc(p.label)}</span></div>`;
+case'calendar':return renderCalendar(w);
+case'progress':return `<div class="wpg"><div class="wpgf" style="width:${p.value}%;background:${p.color}"></div></div>`;
+case'listview':return `<div class="wlv">${(Array.isArray(p.items)?p.items:['Элемент 1']).map((it,i)=>`<div class="wlvi" onclick="event.stopPropagation();execAction(${w.id},'${esc(it)}')">${esc(it)}</div>`).join('')}</div>`;
+case'container':return `<div class="wct" style="width:${p.width};height:${p.height}px;background:${p.bgColor};border-radius:${p.borderRadius}px;padding:${p.padding}px">📦</div>`;
+case'avatar':return `<div class="wav" style="width:${p.size}px;height:${p.size}px;background:${p.bgColor};font-size:${p.size/2.5}px">${p.text}</div>`;
+case'fab':return `<div class="wfab" style="width:${p.size}px;height:${p.size}px;background:${p.bgColor};font-size:${p.size/3}px" onclick="event.stopPropagation();execAction(${w.id})">${p.icon}</div>`;
+case'divider':return `<div style="height:${p.thickness}px;background:${p.color};width:100%"></div>`;
+case'spacer':return `<div style="height:${p.height}px"></div>`;
+default:return `<div style="padding:8px;background:#f1f5f9;border-radius:7px">${w.label}</div>`;
+}
+}
+function renderCalendar(w){
+const now=new Date();
+const y=now.getFullYear(),m=now.getMonth();
+const daysInM=new Date(y,m+1,0).getDate();
+const firstDay=new Date(y,m,1).getDay();
+const months=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const today=now.getDate();
+let h=`<div class="wcal"><div class="wcalh">${months[m]} ${y}</div><div class="wcalg">`;
+['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d=>h+=`<div style="font-size:10px;font-weight:700;color:var(--t2);padding:4px">${d}</div>`);
+let fd=firstDay===0?6:firstDay-1;
+for(let i=0;i<fd;i++)h+=`<div></div>`;
+for(let d=1;d<=daysInM;d++){
+const sel=w.props.selectedDate==`${d}.${m+1}.${y}`?' sel':'';
+const tdy=d===today?' tdy':'';
+h+=`<div class="wcald${sel}${tdy}" onclick="event.stopPropagation();selectDate(${w.id},${d},${m},${y})">${d}</div>`;
+}
+h+=`</div></div>`;
+return h;
+}
+function aEL(){
+document.querySelectorAll('#pct .ww').forEach(el=>{
+el.addEventListener('dragover',wdo);
+el.addEventListener('dragleave',wdl);
+el.addEventListener('drop',wd);
+});
+}
+let dgid=null;
+function wds(e,id){dgid=id;e.target.style.opacity='0.4';e.dataTransfer.setData('text/plain','move');e.dataTransfer.effectAllowed='move';}
+function wdo(e){e.preventDefault();e.dataTransfer.dropEffect='move';const w=e.target.closest('.ww');if(w&&dgid){document.querySelectorAll('#pct .ww').forEach(el=>el.style.borderTop='');w.style.borderTop='3px solid #10b981';}}
+function wdl(e){const w=e.target.closest('.ww');if(w)w.style.borderTop='';}
+function wd(e){
+e.preventDefault();
+document.querySelectorAll('#pct .ww').forEach(el=>{el.style.borderTop='';el.style.opacity='1'});
+if(!dgid)return;
+const w=e.target.closest('.ww');if(!w)return;
+const ti=parseInt(w.dataset.idx);
+moveW(dgid,ti);dgid=null;
+}
+function moveW(id,ti){
+const appbar=widgets.filter(w=>w.type==='appbar');
+const others=widgets.filter(w=>w.type!=='appbar');
+const idx=others.findIndex(w=>w.id===id);
+if(idx===-1||idx===ti)return;
+const[mv]=others.splice(idx,1);
+others.splice(ti,0,mv);
+widgets=[...appbar,...others];
+renderPhone();saveP();showToast('↕️ Перемещено');
+}
+function sel(id){selId=id;renderPhone();renderInsp();}
+document.addEventListener('click',e=>{
+if(!e.target.closest('.ww')&&!e.target.closest('#rp')&&!e.target.closest('#lp')&&!e.target.closest('.btn')&&!e.target.closest('#ho')){
+selId=null;renderPhone();renderInsp();
+}
+});
+document.addEventListener('keydown',e=>{
+if(e.key==='Delete'&&selId){delW(selId)}
+if(e.key==='Escape'){selId=null;renderPhone();renderInsp();}
+});
+function renderInsp(){
+const pn=document.getElementById('rp');
+const w=widgets.find(w=>w.id===selId);
+if(!w){pn.innerHTML='<div class="ie"><div style="font-size:45px">👈</div><div style="font-weight:700">Выберите компонент</div></div>';return;}
+const cd=COMPS.find(c=>c.type===w.type);
+let h=`<div class="ic"><div class="ih"><span>⚙️ ${w.label}</span><button class="btn btn4 btn-sm" onclick="delW(${w.id})">🗑️</button></div>`;
+if(cd&&cd.actions&&cd.actions.length>0){
+h+=`<div class="ps"><div class="pl">⚡ Действие</div><select class="psel" onchange="setAction(${w.id},this.value)"><option value="">Нет действия</option>`;
+cd.actions.forEach(a=>{
+h+=`<option value="${a}" ${w.action===a?'selected':''}>${actionLabel(a)}</option>`;
+});
+h+=`</select>`;
+if(w.action==='customCode'){
+h+=`<textarea class="pta" rows="3" placeholder="Ваш код..." onchange="updateP(${w.id},'actionCode',this.value)">${w.actionCode||''}</textarea>`;
+}
+h+=`<div class="ib"><h4>💡 ${actionLabel(w.action||'')||'Выберите действие'}</h4><p>${actionDesc(w.action||'')}</p></div></div>`;
+}
+Object.entries(w.props).forEach(([k,v])=>{
+if(['selectedDate','highlightToday'].includes(k))return;
+h+=`<div class="ps"><div class="pl">${lm(k)}</div>`;
+if(typeof v==='string'&&k.includes('olor')){
+h+=`<div class="cr"><input type="color" class="cb" value="${v}" onchange="updateP(${w.id},'${k}',this.value)"><input class="pin" style="flex:1" value="${v}" onchange="updateP(${w.id},'${k}',this.value)"></div>`;
+}else if(typeof v==='boolean'){
+h+=`<select class="psel" onchange="updateP(${w.id},'${k}',this.value==='true')"><option value="true" ${v?'selected':''}>Да</option><option value="false" ${!v?'selected':''}>Нет</option></select>`;
+}else if(typeof v==='number'){
+h+=`<input type="number" class="pin" value="${v}" onchange="updateP(${w.id},'${k}',Number(this.value))">`;
+}else if(k==='items'){
+h+=`<textarea class="pta" rows="4" onchange="updateP(${w.id},'${k}',this.value.split('\\n'))">${Array.isArray(v)?v.join('\n'):v}</textarea>`;
+}else{
+h+=`<input class="pin" value="${esc(String(v))}" onchange="updateP(${w.id},'${k}',this.value)">`;
+}
+h+=`</div>`;
+});
+h+=`</div>`;pn.innerHTML=h;
+}
+function actionLabel(a){
+const m={showToast:'Показать Toast',showAlert:'Показать Alert',openURL:'Открыть URL',makeCall:'Позвонить',sendEmail:'Email',shareText:'Поделиться',saveToDB:'Сохранить в БД',loadFromDB:'Загрузить из БД',apiGet:'GET запрос',apiPost:'POST запрос',vibrate:'Вибрация',navigateTo:'Переход на экран',customCode:'Свой код',copyToClipboard:'Копировать',onTextChanged:'При вводе текста',onCheckedChanged:'При переключении',onValueChanged:'При изменении',onItemClick:'При клике на элемент',onDateSelected:'При выборе даты',onSelected:'При выборе',onBackPressed:'При нажатии Назад'};
+return m[a]||a;
+}
+function actionDesc(a){
+const m={showToast:'Покажет всплывающее уведомление на экране',showAlert:'Покажет диалоговое окно с сообщением',openURL:'Откроет ссылку в браузере',makeCall:'Откроет приложение Телефон',sendEmail:'Откроет почтовый клиент',shareText:'Откроет меню "Поделиться"',saveToDB:'Сохранит данные локально',loadFromDB:'Загрузит сохранённые данные',apiGet:'Выполнит GET запрос к серверу',apiPost:'Отправит POST запрос',vibrate:'Вибрация телефона',navigateTo:'Перейдёт на другой экран',customCode:'Выполнит ваш код',copyToClipboard:'Скопирует текст в буфер обмена',onTextChanged:'Сработает при каждом изменении текста',onCheckedChanged:'Сработает при переключении',onValueChanged:'Сработает при движении слайдера',onItemClick:'Сработает при нажатии на элемент списка',onDateSelected:'Сработает при выборе даты в календаре',onSelected:'Сработает при выборе радио-кнопки',onBackPressed:'Сработает при нажатии кнопки Назад'};
+return m[a]||'Выберите действие из списка';
+}
+function setAction(id,a){
+const w=widgets.find(w=>w.id===id);if(!w)return;
+w.action=a;w.actionCode='';
+renderPhone();renderInsp();saveP();
+if(a)showToast('⚡ Действие: '+actionLabel(a));
+}
+function lm(k){
+const m={content:'📝 Текст',label:'🏷️ Название',title:'📌 Заголовок',subtitle:'📄 Подзаголовок',placeholder:'💡 Подсказка',text:'📝 Текст',fontSize:'🔤 Размер',fontWeight:'🔤 Жирность',bgColor:'🎨 Фон',textColor:'🎨 Цвет текста',color:'🎨 Цвет',activeColor:'🎨 Активный',borderColor:'🎨 Рамка',width:'↔️ Ширина',height:'↕️ Высота',size:'📏 Размер',borderRadius:'📐 Скругление',padding:'📏 Отступы',elevation:'📶 Тень',src:'🖼️ URL',value:'📊 Значение',min:'⬇️ Мин',max:'⬆️ Макс',isPassword:'🔒 Пароль',items:'📋 Элементы',checked:'✅ Отмечен',selected:'🔘 Выбран',icon:'⭐ Иконка',thickness:'📏 Толщина',group:'🔗 Группа'};
+return m[k]||k;
+}
+function updateP(id,k,v){
+const w=widgets.find(w=>w.id===id);if(!w)return;
+w.props[k]=v;renderPhone();saveP();
+}
+function delW(id){widgets=widgets.filter(w=>w.id!==id);if(selId===id)selId=null;renderPhone();renderInsp();saveP();showToast('🗑️ Удалено');}
+function clearAll(){if(!widgets.length)return;if(confirm('Удалить все?')){widgets=[];selId=null;renderPhone();renderInsp();saveP();showToast('🧹 Очищено');}}
+function toggleSwitch(id){
+const w=widgets.find(w=>w.id===id);if(!w)return;
+w.props.value=!w.props.value;renderPhone();
+if(w.action==='onCheckedChanged'||w.action==='saveToDB')execAction(id);
+saveP();
+}
+function toggleCheck(id){
+const w=widgets.find(w=>w.id===id);if(!w)return;
+w.props.checked=!w.props.checked;renderPhone();
+if(w.action==='onCheckedChanged')execAction(id);
+saveP();
+}
+function selectRadio(id){
+const w=widgets.find(w=>w.id===id);if(!w)return;
+widgets.forEach(ww=>{if(ww.type==='radio'&&ww.props.group===w.props.group)ww.props.selected=false;});
+w.props.selected=true;renderPhone();
+if(w.action==='onSelected')execAction(id);
+saveP();
+}
+function selectDate(id,d,m,y){
+const w=widgets.find(w=>w.id===id);if(!w)return;
+w.props.selectedDate=`${d}.${m+1}.${y}`;renderPhone();
+if(w.action==='onDateSelected')execAction(id);
+saveP();
+}
+function updateSlider(e,id){
+const w=widgets.find(w=>w.id===id);if(!w)return;
+const rect=e.target.closest('.wslt').getBoundingClientRect();
+const pct=Math.round(((e.clientX-rect.left)/rect.width)*100);
+w.props.value=Math.max(w.props.min,Math.min(w.props.max,pct));
+renderPhone();
+if(w.action==='onValueChanged')execAction(id);
+saveP();
+}
+function execAction(id,param){
+const w=widgets.find(w=>w.id===id);if(!w||!w.action)return;
+switch(w.action){
+case'showToast':showToast(param||w.props.label||w.props.content||'Действие!');break;
+case'showAlert':alert(param||w.props.label||'Уведомление');break;
+case'openURL':window.open('https://www.google.com','_blank');showToast('🔗 Открыта ссылка');break;
+case'makeCall':window.open('tel:+79000000000','_self');showToast('📞 Звонок');break;
+case'sendEmail':window.open('mailto:test@test.com','_self');showToast('📧 Почта');break;
+case'shareText':if(navigator.share)navigator.share({text:w.props.label||'Поделиться'});else showToast('📤 Шаринг недоступен');break;
+case'copyToClipboard':navigator.clipboard.writeText(w.props.content||w.props.label||'').then(()=>showToast('📋 Скопировано!'));break;
+case'vibrate':if(navigator.vibrate)navigator.vibrate(200);showToast('📳 Вибрация');break;
+case'saveToDB':localStorage.setItem('app_data_'+id,JSON.stringify(w.props));showToast('💾 Сохранено в БД');break;
+case'loadFromDB':const d=localStorage.getItem('app_data_'+id);if(d)showToast('📂 Данные: '+d.substring(0,30)+'...');else showToast('📂 Нет данных');break;
+case'apiGet':showToast('🌐 GET запрос...');break;
+case'apiPost':showToast('📤 POST запрос...');break;
+case'navigateTo':showToast('🧭 Переход на экран: '+((w.props.label||w.props.title||'Новый экран')));break;
+case'customCode':if(w.actionCode){try{new Function(w.actionCode)();showToast('⚡ Код выполнен');}catch(e){showToast('❌ Ошибка в коде: '+e.message);}}break;
+case'onTextChanged':showToast('⌨️ Текст изменён');break;
+case'onCheckedChanged':showToast('🔛 Переключено: '+(w.props.value||w.props.checked));break;
+case'onValueChanged':showToast('🎚️ Значение: '+w.props.value);break;
+case'onItemClick':showToast('📋 Выбран: '+param);break;
+case'onDateSelected':showToast('📅 Дата: '+w.props.selectedDate);break;
+case'onSelected':showToast('🔘 Выбран: '+w.props.label);break;
+case'onBackPressed':showToast('⬅️ Назад');break;
+}
+}
+function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';}
+function showToast(m){
+const tc=document.getElementById('tc');
+const el=document.createElement('div');el.className='tm';el.textContent=m;
+tc.appendChild(el);
+setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity 0.3s';setTimeout(()=>el.remove(),300);},2500);
+}
+function saveP(){localStorage.setItem('ab_proj',JSON.stringify({widgets,ctr}));}
+function loadP(){
+const r=localStorage.getItem('ab_proj');if(!r){showToast('📂 Нет сохранений');return}
+try{const d=JSON.parse(r);widgets=d.widgets||[];ctr=d.ctr||1;selId=null;renderPhone();renderInsp();showToast('📂 Загружено')}catch(e){showToast('❌ Ошибка')}
+}
+function loadExample(){
+widgets=[];ctr=1;
+[{t:'appbar',p:{title:'Пример приложения',bgColor:'#7c3aed',textColor:'#fff'}},
+{t:'text',p:{content:'Добро пожаловать! 👋',fontSize:20,fontWeight:'700',color:'#1e293b'},a:'showToast'},
+{t:'card',p:{title:'Профиль',subtitle:'Карточка пользователя',bgColor:'#fff',borderRadius:14,elevation:4},a:'showAlert'},
+{t:'input',p:{placeholder:'Ваше имя...',fontSize:14,borderColor:'#e2e8f0',borderRadius:10},a:'onTextChanged'},
+{t:'button',p:{label:'Сохранить',bgColor:'#10b981',textColor:'#fff',fontSize:15,borderRadius:12,height:52},a:'showToast'},
+{t:'switch',p:{label:'Тёмная тема',value:false,activeColor:'#7c3aed'},a:'onCheckedChanged'},
+{t:'calendar',p:{selectedDate:''},a:'onDateSelected'},
+{t:'slider',p:{label:'Громкость',value:70,min:0,max:100,activeColor:'#7c3aed'},a:'onValueChanged'}].forEach(item=>{
+const d=COMPS.find(c=>c.type===item.t);if(!d)return;
+const w={id:ctr++,type:d.type,label:d.label,props:{...JSON.parse(JSON.stringify(d.props)),...item.p},action:item.a||'',actionCode:''};
+widgets.push(w);
+});
+selId=null;renderPhone();renderInsp();saveP();showToast('📥 Пример загружен!');
+}
+function downloadProject(){
+if(!widgets.length){showToast('⚠️ Добавьте компоненты');return}
+const nm=document.getElementById('pn').value||'MyApp';
+let x=`<?xml version="1.0" encoding="utf-8"?>\n<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp" android:background="#f8fafc">\n\n`;
+let j=`package com.example.${nm.toLowerCase()};\n\nimport android.os.Bundle;\nimport android.widget.*;\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle s) {\n        super.onCreate(s);\n        setContentView(R.layout.activity_main);\n\n`;
+widgets.forEach((w,i)=>{
+if(w.type==='appbar')return;
+const id='w'+i;
+switch(w.type){
+case'text':x+=`<TextView android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${esc(w.props.content)}" android:textColor="${w.props.color}" android:textSize="${w.props.fontSize}sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>\n\n`;break;
+case'button':x+=`<Button android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="${w.props.height}dp" android:text="${esc(w.props.label)}" android:backgroundTint="${w.props.bgColor}" android:textColor="${w.props.textColor}" android:textSize="${w.props.fontSize}sp" app:cornerRadius="${w.props.borderRadius}dp" android:layout_marginBottom="12dp"/>\n\n`;
+if(w.action)j+=actionJava(id,w);break;
+case'input':x+=`<EditText android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="${esc(w.props.placeholder)}" android:textSize="${w.props.fontSize}sp" android:padding="14dp" android:inputType="${w.props.isPassword?'textPassword':'text'}" android:layout_marginBottom="12dp"/>\n\n`;break;
+case'image':x+=`<ImageView android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="${w.props.height}dp" android:scaleType="centerCrop" android:layout_marginBottom="12dp"/>\n\n`;break;
+case'card':x+=`<androidx.cardview.widget.CardView android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" app:cardElevation="${w.props.elevation}dp" app:cardCornerRadius="${w.props.borderRadius}dp" android:padding="16dp" android:layout_marginBottom="12dp"><LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content"><TextView android:text="${esc(w.props.title)}" android:textSize="18sp" android:textStyle="bold"/><TextView android:text="${esc(w.props.subtitle)}" android:textSize="14sp" android:textColor="#64748b"/></LinearLayout></androidx.cardview.widget.CardView>\n\n`;
+if(w.action)j+=actionJava(id,w);break;
+case'switch':x+=`<LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp"><TextView android:text="${esc(w.props.label)}" android:layout_width="0dp" android:layout_weight="1"/><Switch android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content"/></LinearLayout>\n\n`;
+if(w.action)j+=actionJava(id,w);break;
+case'slider':x+=`<TextView android:id="@+id/${id}_l" android:text="${esc(w.props.label)}:${w.props.value}" android:layout_width="wrap_content" android:layout_height="wrap_content"/><SeekBar android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="${w.props.max}" android:progress="${w.props.value}" android:layout_marginBottom="12dp"/>\n\n`;break;
+case'checkbox':x+=`<CheckBox android:id="@+id/${id}" android:text="${esc(w.props.label)}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="${w.props.checked}" android:layout_marginBottom="12dp"/>\n\n`;break;
+case'calendar':x+=`<DatePicker android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="12dp"/>\n\n`;break;
+case'progress':x+=`<ProgressBar android:id="@+id/${id}" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="100" android:progress="${w.props.value}" android:layout_marginBottom="12dp"/>\n\n`;break;
+default:x+=`<View android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="50dp" android:background="#f1f5f9" android:layout_marginBottom="12dp"/>\n\n`;
+}
+});
+x+=`</LinearLayout>`;
+j+=`    }\n}\n`;
+const full=`=== ПРОЕКТ ANDROID STUDIO ===\n=== ${nm} ===\n\nСКОПИРУЙТЕ В СООТВЕТСТВУЮЩИЕ ФАЙЛЫ:\n\n--- res/layout/activity_main.xml ---\n${x}\n\n--- MainActivity.java ---\n${j}\n\n--- build.gradle (app) зависимости ---\nimplementation 'androidx.cardview:cardview:1.0.0'\n`;
+const blob=new Blob([full],{type:'text/plain;charset=utf-8'});
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nm+'_project.txt';a.click();
+showToast('📦 Проект скачан!');
+}
+function actionJava(id,w){
+switch(w.action){
+case'showToast':return`findViewById(R.id.${id}).setOnClickListener(v->Toast.makeText(this,"${esc(w.props.label||'Нажато')}",Toast.LENGTH_SHORT).show());\n`;
+case'showAlert':return`findViewById(R.id.${id}).setOnClickListener(v->new AlertDialog.Builder(this).setMessage("${esc(w.props.label||'Уведомление')}").setPositiveButton("OK",null).show());\n`;
+case'openURL':return`findViewById(R.id.${id}).setOnClickListener(v->startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://google.com"))));\n`;
+case'makeCall':return`findViewById(R.id.${id}).setOnClickListener(v->startActivity(new Intent(Intent.ACTION_DIAL,Uri.parse("tel:+79000000000"))));\n`;
+case'sendEmail':return`findViewById(R.id.${id}).setOnClickListener(v->{Intent i=new Intent(Intent.ACTION_SENDTO);i.setData(Uri.parse("mailto:"));startActivity(i);});\n`;
+case'shareText':return`findViewById(R.id.${id}).setOnClickListener(v->{Intent i=new Intent(Intent.ACTION_SEND);i.setType("text/plain");i.putExtra(Intent.EXTRA_TEXT,"${esc(w.props.label||'')}");startActivity(Intent.createChooser(i,"Поделиться"));});\n`;
+case'copyToClipboard':return`findViewById(R.id.${id}).setOnClickListener(v->{android.content.ClipboardManager cm=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);cm.setText("${esc(w.props.content||'')}");Toast.makeText(this,"Скопировано!",Toast.LENGTH_SHORT).show();});\n`;
+default:return`findViewById(R.id.${id}).setOnClickListener(v->Toast.makeText(this,"Действие: ${w.action}",Toast.LENGTH_SHORT).show());\n`;
+}
+}
+function showHelp(){document.getElementById('ho').classList.add('sh');}
+function closeHelp(){document.getElementById('ho').classList.remove('sh');}
+document.getElementById('ho').addEventListener('click',e=>{if(e.target.id==='ho')closeHelp();});
+renderLP();sd();loadP();renderPhone();
+console.log('🚀 App Free Builder Pro готов!');
+</script>
 </body>
 </html>
