@@ -3,1097 +3,905 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Free Builder — Создай своё приложение</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
-    <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>App Free Builder Pro — Конструктор приложений</title>
     <style>
         :root {
-            --bg: #ffffff;
-            --surface: #f8fafc;
-            --surface2: #f1f5f9;
-            --border: #e2e8f0;
-            --primary: #7c3aed;
-            --primary-light: #f5f3ff;
-            --primary-dark: #6d28d9;
-            --text: #1e293b;
-            --text-secondary: #64748b;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
+            --bg: #ffffff; --surface: #f8fafc; --border: #e2e8f0;
+            --primary: #7c3aed; --primary-light: #f5f3ff; --primary-dark: #6d28d9;
+            --text: #1e293b; --text-secondary: #64748b;
+            --danger: #ef4444; --success: #10b981; --warning: #f59e0b;
             --phone-bg: #ffffff;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-            --shadow-lg: 0 20px 60px rgba(0,0,0,0.15);
-            --radius: 14px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: #f1f5f9;
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
-            -webkit-font-smoothing: antialiased;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f1f5f9; color: var(--text); height: 100vh; overflow: hidden;
         }
-        .app { display: flex; flex-direction: column; height: 100vh; }
+        #app { display: flex; flex-direction: column; height: 100vh; }
 
-        /* Toolbar */
-        .toolbar {
-            height: 64px;
-            background: var(--bg);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-            z-index: 100;
-            box-shadow: var(--shadow-sm);
+        /* TOOLBAR */
+        #toolbar {
+            height: 56px; background: var(--bg); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
-        .toolbar-left { display: flex; align-items: center; gap: 16px; }
-        .logo {
-            font-size: 22px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #7c3aed, #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-        .logo-icon { font-size: 30px; -webkit-text-fill-color: initial; }
-        .badge {
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-        }
-        .badge-error { background: #fef2f2; color: #dc2626; }
-        .badge-success { background: #f0fdf4; color: #16a34a; }
-        .toolbar-actions { display: flex; gap: 10px; align-items: center; }
+        .logo { font-size: 18px; font-weight: 800; }
+        .logo span { background: linear-gradient(135deg, #7c3aed, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .btn {
-            padding: 11px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.25s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -0.2px;
+            padding: 9px 16px; border: none; border-radius: 10px; font-size: 12px;
+            font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+            font-family: inherit; letter-spacing: -0.2px;
         }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 14px rgba(124,58,237,0.3);
-        }
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(124,58,237,0.4);
-        }
-        .btn-outline {
-            background: var(--bg);
-            border: 2px solid var(--border);
-            color: var(--text);
-        }
-        .btn-outline:hover { background: var(--surface2); border-color: #cbd5e1; }
-        .btn-success {
-            background: var(--success);
-            color: white;
-            box-shadow: 0 4px 14px rgba(16,185,129,0.3);
-        }
-        .btn-success:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: var(--bg); border: 2px solid var(--border); color: var(--text); }
+        .btn-outline:hover { background: var(--surface); }
         .btn-danger { background: var(--danger); color: white; }
-        .input-sm {
-            padding: 10px 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 13px;
-            background: var(--surface);
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            transition: all 0.2s;
-            width: 170px;
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-sm { padding: 5px 12px; font-size: 11px; border-radius: 8px; }
+        #projectName {
+            padding: 9px 14px; border: 2px solid var(--border); border-radius: 10px;
+            font-size: 13px; font-weight: 600; width: 140px; font-family: inherit;
         }
-        .input-sm:focus { outline: none; border-color: var(--primary); background: var(--bg); box-shadow: 0 0 0 4px rgba(124,58,237,0.08); }
+        #projectName:focus { outline: none; border-color: var(--primary); }
 
-        /* Main Layout */
-        .main-content { display: flex; flex: 1; overflow: hidden; }
+        /* MAIN */
+        #mainContent { display: flex; flex: 1; overflow: hidden; }
 
-        /* Sidebar */
-        .sidebar {
-            width: 275px;
-            background: var(--bg);
-            border-right: 1px solid var(--border);
-            overflow-y: auto;
-            z-index: 10;
-            box-shadow: var(--shadow-sm);
+        /* LEFT - Components */
+        #componentPanel {
+            width: 250px; background: var(--bg); border-right: 1px solid var(--border);
+            overflow-y: auto; flex-shrink: 0; padding: 8px;
         }
-        .sidebar-section { padding: 18px; border-bottom: 1px solid var(--border); }
-        .sidebar-title {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: var(--text-secondary);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .cat-title {
+            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-secondary); padding: 8px 4px; margin-top: 8px;
         }
-        .component-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .component-card {
-            background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            padding: 14px 10px;
-            cursor: grab;
-            transition: all 0.25s;
-            text-align: center;
-            font-size: 11px;
-            font-weight: 600;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-secondary);
+        .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .comp-item {
+            background: var(--surface); border: 2px solid var(--border); border-radius: 12px;
+            padding: 12px 8px; cursor: grab; text-align: center; font-size: 11px;
+            font-weight: 600; transition: all 0.2s; color: var(--text-secondary);
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
         }
-        .component-card:hover {
-            border-color: var(--primary);
-            background: var(--primary-light);
-            color: var(--primary);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(124,58,237,0.12);
+        .comp-item:hover {
+            border-color: var(--primary); background: var(--primary-light);
+            color: var(--primary); transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124,58,237,0.15);
         }
-        .component-card:active { cursor: grabbing; transform: scale(0.94); }
-        .component-icon { font-size: 28px; }
-        .category-label {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: var(--primary);
-            margin-top: 16px;
+        .comp-item:active { cursor: grabbing; transform: scale(0.95); }
+        .comp-icon { font-size: 26px; }
+
+        /* CENTER - Phone */
+        #previewArea {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            background: #e2e8f0; background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 20px 20px; overflow: auto; padding: 20px;
+        }
+        #phoneFrame {
+            width: 390px; min-height: 700px; background: var(--phone-bg); border-radius: 40px;
+            box-shadow: 0 0 0 8px #1e293b, 0 0 0 10px #334155, 0 30px 80px rgba(0,0,0,0.3);
+            overflow: hidden; flex-shrink: 0;
+        }
+        #phoneNotch {
+            width: 140px; height: 28px; background: #1e293b;
+            border-radius: 0 0 18px 18px; margin: 0 auto;
+        }
+        #phoneStatusBar {
+            height: 40px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px; font-size: 13px; font-weight: 700; background: white;
+        }
+        #phoneAppBar {
+            background: var(--primary); color: white; padding: 16px 20px;
+            font-size: 18px; font-weight: 800; letter-spacing: -0.3px;
+        }
+        #phoneContent {
+            padding: 16px; min-height: 500px; position: relative;
+            transition: background 0.2s;
+        }
+        #phoneContent.drag-over {
+            background: var(--primary-light); outline: 3px dashed var(--primary);
+            outline-offset: -5px; border-radius: 20px;
+        }
+
+        /* Widget states */
+        .widget-wrapper {
+            position: relative; cursor: move; transition: box-shadow 0.2s;
             margin-bottom: 8px;
-            padding: 4px 10px;
-            background: var(--primary-light);
-            border-radius: 6px;
-            display: inline-block;
+        }
+        .widget-wrapper:hover { z-index: 5; }
+        .widget-wrapper.selected > * { outline: 3px solid var(--primary) !important; outline-offset: 2px; }
+        .widget-wrapper.has-function::after {
+            content: '⚡'; position: absolute; top: -8px; right: -8px;
+            background: var(--primary); color: white; width: 22px; height: 22px;
+            border-radius: 50%; font-size: 12px; display: flex; align-items: center;
+            justify-content: center; z-index: 10; box-shadow: 0 2px 6px rgba(124,58,237,0.4);
+        }
+        .empty-phone {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 350px; color: #cbd5e1; gap: 12px;
         }
 
-        /* Phone Preview */
-        .phone-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #e2e8f0;
-            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-            background-size: 24px 24px;
-            padding: 30px;
-            overflow: auto;
+        /* Widget styles */
+        .w-button {
+            width: 100%; padding: 14px; border: none; border-radius: 10px;
+            color: white; font-weight: 700; font-size: 15px; text-align: center;
+            letter-spacing: -0.2px; cursor: pointer;
         }
-        .phone {
-            width: 400px;
-            min-height: 780px;
-            background: var(--phone-bg);
-            border-radius: 44px;
-            box-shadow: var(--shadow-lg), 0 0 0 8px #1e293b, 0 0 0 10px #334155, 0 30px 80px rgba(0,0,0,0.35);
-            overflow: hidden;
-            position: relative;
-            flex-shrink: 0;
+        .w-text { font-weight: 600; padding: 4px 0; word-break: break-word; }
+        .w-input {
+            width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 10px;
+            font-size: 14px; font-family: inherit; background: white;
         }
-        .phone-notch {
-            width: 150px;
-            height: 30px;
-            background: #1e293b;
-            border-radius: 0 0 22px 22px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 10;
+        .w-image {
+            width: 100%; border-radius: 12px; object-fit: cover; background: #e2e8f0;
+            display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 40px;
         }
-        .phone-screen {
-            min-height: 720px;
-            background: var(--phone-bg);
-            position: relative;
+        .w-card {
+            background: white; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 16px;
         }
-        .phone-statusbar {
-            height: 40px;
-            background: var(--phone-bg);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--text);
-            border-bottom: 1px solid #f8fafc;
+        .w-switch-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+        .w-switch-track {
+            width: 48px; height: 28px; border-radius: 14px; position: relative;
+            transition: all 0.3s; flex-shrink: 0;
         }
-        .phone-appbar {
-            background: var(--primary);
-            color: white;
-            padding: 18px 22px;
-            font-size: 19px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            letter-spacing: -0.4px;
+        .w-switch-thumb {
+            width: 24px; height: 24px; border-radius: 50%; background: white;
+            position: absolute; top: 2px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
-        .phone-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            min-height: 500px;
-            position: relative;
+        .w-slider-wrap { padding: 4px 0; }
+        .w-slider-track { height: 6px; background: #e2e8f0; border-radius: 3px; position: relative; margin-top: 6px; }
+        .w-slider-fill { height: 100%; border-radius: 3px; }
+        .w-slider-thumb {
+            width: 22px; height: 22px; border-radius: 50%; position: absolute;
+            top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
-        .phone-body.drag-over {
-            background: var(--primary-light);
-            outline: 3px dashed var(--primary);
-            outline-offset: -6px;
-            border-radius: 20px;
+        .w-listview { background: white; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .w-listview-item { padding: 13px 16px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 500; }
+        .w-listview-item:last-child { border-bottom: none; }
+        .w-container {
+            border-radius: 12px; display: flex; align-items: center; justify-content: center;
+            color: #7c3aed; font-weight: 600; font-size: 14px; min-height: 60px;
         }
-        .preview-component {
-            position: relative;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 2px solid transparent;
-        }
-        .preview-component:hover {
-            border-color: var(--primary);
-            border-radius: 10px;
-            box-shadow: 0 0 0 5px rgba(124,58,237,0.08);
-        }
-        .preview-component.selected {
-            border-color: var(--primary) !important;
-            border-radius: 10px;
-            box-shadow: 0 0 0 5px rgba(124,58,237,0.2) !important;
-        }
-        .preview-component.error-comp {
-            border-color: var(--danger) !important;
-            box-shadow: 0 0 0 5px rgba(239,68,68,0.15) !important;
-        }
-        .error-badge {
-            position: absolute;
-            top: -12px;
-            right: -12px;
-            background: var(--danger);
-            color: white;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 800;
-            z-index: 5;
-            animation: pulse 2s infinite;
-            box-shadow: 0 4px 12px rgba(239,68,68,0.4);
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-        .empty-preview {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 400px;
-            color: #cbd5e1;
-            text-align: center;
-            gap: 14px;
-        }
-        .empty-preview-icon { font-size: 70px; }
-        .function-tag {
-            display: inline-block;
-            padding: 2px 8px;
-            background: #dbeafe;
-            color: #1d4ed8;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            margin-top: 4px;
+        .w-avatar {
+            border-radius: 50%; color: white; display: flex; align-items: center;
+            justify-content: center; font-weight: 800;
         }
 
-        /* Inspector */
-        .inspector {
-            width: 370px;
-            background: var(--bg);
-            border-left: 1px solid var(--border);
-            overflow-y: auto;
-            box-shadow: var(--shadow-sm);
-            z-index: 10;
+        /* RIGHT - Inspector */
+        #inspectorPanel {
+            width: 340px; background: var(--bg); border-left: 1px solid var(--border);
+            overflow-y: auto; flex-shrink: 0;
         }
-        .inspector-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border);
-            font-weight: 800;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            background: var(--bg);
-            z-index: 5;
-            letter-spacing: -0.3px;
+        .insp-empty {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100%; color: #cbd5e1; text-align: center; gap: 12px; padding: 40px;
         }
-        .inspector-content { padding: 20px; }
-        .prop-section {
-            margin-bottom: 22px;
-            padding-bottom: 22px;
-            border-bottom: 1px solid var(--border);
+        .insp-content { padding: 16px; }
+        .insp-header {
+            font-weight: 800; font-size: 15px; padding-bottom: 14px;
+            border-bottom: 1px solid var(--border); margin-bottom: 14px;
+            display: flex; justify-content: space-between; align-items: center;
         }
+        .prop-section { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
         .prop-section:last-child { border-bottom: none; }
         .prop-label {
-            font-size: 11px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-secondary); margin-bottom: 4px;
         }
         .prop-input, .prop-select, .prop-textarea {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            font-size: 13px;
+            width: 100%; padding: 10px 14px; border: 2px solid var(--border);
+            border-radius: 10px; font-size: 13px; font-family: inherit; font-weight: 500;
             background: var(--surface);
-            color: var(--text);
-            transition: all 0.2s;
-            font-family: 'Inter', sans-serif;
-            margin-bottom: 10px;
-            font-weight: 500;
         }
         .prop-input:focus, .prop-select:focus, .prop-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(124,58,237,0.08);
-            background: var(--bg);
+            outline: none; border-color: var(--primary); background: white;
+            box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
         }
-        .prop-color-wrap { display: flex; gap: 10px; align-items: center; }
-        .prop-color-input {
-            width: 48px;
-            height: 48px;
-            border: 2px solid var(--border);
-            border-radius: 14px;
-            cursor: pointer;
-            padding: 4px;
-            background: white;
+        .color-row { display: flex; gap: 8px; }
+        .color-box {
+            width: 44px; height: 44px; border: 2px solid var(--border);
+            border-radius: 10px; cursor: pointer; padding: 3px;
         }
-        .prop-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .error-panel {
-            margin-top: 14px;
-            padding: 14px;
-            background: #fef2f2;
-            border: 2px solid #fecaca;
-            border-radius: 14px;
-            font-size: 12px;
-            color: #dc2626;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            font-weight: 500;
+        .func-chip {
+            display: inline-block; padding: 6px 14px; margin: 3px;
+            border: 2px solid var(--border); border-radius: 20px;
+            font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
         }
-        .function-panel {
-            margin-top: 14px;
-            padding: 14px;
-            background: #f0fdf4;
-            border: 2px solid #bbf7d0;
-            border-radius: 14px;
-            font-size: 12px;
-            color: #16a34a;
-            font-weight: 500;
+        .func-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .func-chip:hover { border-color: var(--primary); }
+        .info-box {
+            margin-top: 12px; padding: 14px; background: #f0fdf4; border: 2px solid #bbf7d0;
+            border-radius: 12px; font-size: 12px; line-height: 1.5;
         }
-        .function-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-        .function-chip {
-            padding: 6px 14px;
-            background: white;
-            border: 1.5px solid #bbf7d0;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .function-chip:hover { background: #16a34a; color: white; border-color: #16a34a; }
-        .function-chip.active { background: #16a34a; color: white; }
-        .empty-inspector {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #cbd5e1;
-            text-align: center;
-            padding: 50px;
-            gap: 14px;
-        }
+        .info-box h4 { margin-bottom: 6px; color: #16a34a; }
 
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: white;
-            padding: 16px 28px;
-            border-radius: 40px;
-            font-size: 14px;
-            font-weight: 700;
-            z-index: 1000;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
-            animation: slideUp 0.3s ease;
-            letter-spacing: -0.2px;
+        /* TOAST */
+        #toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: #1e293b; color: white; padding: 14px 28px; border-radius: 30px;
+            font-size: 14px; font-weight: 700; z-index: 9999; opacity: 0;
+            transition: opacity 0.3s; pointer-events: none;
         }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        #toast.show { opacity: 1; }
+
+        /* HELP MODAL */
+        #helpModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; display: none;
+            align-items: center; justify-content: center;
+        }
+        #helpModal.show { display: flex; }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 30px; max-width: 600px;
+            max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .modal-content h2 { font-size: 22px; margin-bottom: 16px; }
+        .modal-content h3 { font-size: 16px; margin-top: 16px; margin-bottom: 8px; color: var(--primary); }
+        .modal-content p { font-size: 13px; line-height: 1.7; margin-bottom: 8px; color: var(--text-secondary); }
+        .modal-content ul { padding-left: 20px; font-size: 13px; line-height: 1.8; color: var(--text-secondary); }
+        .modal-content kbd {
+            background: #f1f5f9; padding: 2px 8px; border-radius: 4px;
+            font-size: 12px; font-weight: 700; border: 1px solid #cbd5e1;
         }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="app">
+        <!-- TOOLBAR -->
+        <div id="toolbar">
+            <div style="display:flex;align-items:center;gap:16px;">
+                <span class="logo"><span>🚀 App Free Builder Pro</span></span>
+                <span id="widgetCount" style="font-size:12px;color:#64748b;font-weight:600;"></span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <input type="text" id="projectName" value="MyApp" placeholder="Название">
+                <button class="btn btn-outline btn-sm" onclick="loadExample()">📥 Пример</button>
+                <button class="btn btn-outline btn-sm" onclick="clearAll()">🧹 Очистить</button>
+                <button class="btn btn-outline btn-sm" onclick="saveProject()">💾 Сохранить</button>
+                <button class="btn btn-outline btn-sm" onclick="loadProject()">📂 Загрузить</button>
+                <button class="btn btn-outline btn-sm" onclick="showHelp()">❓ Как работает</button>
+                <button class="btn btn-success" onclick="downloadProject()">📦 Скачать</button>
+            </div>
+        </div>
 
-    <script type="text/babel">
-        const { useState, useCallback, useRef, useEffect } = React;
+        <!-- MAIN -->
+        <div id="mainContent">
+            <!-- LEFT -->
+            <div id="componentPanel"></div>
+            <!-- CENTER -->
+            <div id="previewArea">
+                <div id="phoneFrame">
+                    <div id="phoneNotch"></div>
+                    <div id="phoneStatusBar"><span>9:41</span><span>📶 🔋</span></div>
+                    <div id="phoneAppBar">Моё приложение</div>
+                    <div id="phoneContent">
+                        <div class="empty-phone">
+                            <div style="font-size:60px;">📱</div>
+                            <div style="font-weight:700;font-size:15px;">Перетащите компоненты сюда</div>
+                            <div style="font-size:12px;">Из панели слева</div>
+                            <button class="btn btn-warning btn-sm" onclick="loadExample()" style="margin-top:8px;">Загрузить пример приложения</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- RIGHT -->
+            <div id="inspectorPanel">
+                <div class="insp-empty">
+                    <div style="font-size:50px;">👈</div>
+                    <div style="font-weight:700;">Выберите компонент</div>
+                    <div>Кликните по элементу в телефоне</div>
+                    <div style="font-size:12px;color:#94a3b8;">Его можно двигать зажав мышкой</div>
+                </div>
+            </div>
+        </div>
+        <div id="toast"></div>
+    </div>
 
-        // ============ КОМПОНЕНТЫ С ФУНКЦИЯМИ ============
+    <!-- HELP MODAL -->
+    <div id="helpModal">
+        <div class="modal-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h2>📚 Как работает App Free Builder Pro</h2>
+                <button class="btn btn-danger btn-sm" onclick="closeHelp()">✕</button>
+            </div>
+            
+            <h3>🎯 Основная идея</h3>
+            <p>Это визуальный конструктор Android-приложений. Вы собираете экран из готовых компонентов, настраиваете их внешний вид и поведение, а затем скачиваете готовый XML-файл для Android Studio.</p>
+            
+            <h3>🖱️ Drag & Drop компонентов</h3>
+            <ul>
+                <li><b>Добавление:</b> Хватаете компонент слева и перетаскиваете в телефон. Он появится внизу списка.</li>
+                <li><b>Перемещение внутри телефона:</b> Зажмите компонент мышкой и тяните вверх или вниз — он поменяется местами с соседними. Зелёная линия показывает, куда встанет элемент.</li>
+                <li><b>Клик по компоненту:</b> Выделяет его и открывает редактор свойств справа.</li>
+            </ul>
+            
+            <h3>⚙️ Редактор свойств (справа)</h3>
+            <ul>
+                <li>Меняйте <b>текст, цвет, размер, шрифт</b> и другие параметры.</li>
+                <li>Для цветов есть удобный <kbd>color picker</kbd> — просто кликните на квадратик.</li>
+                <li>Все изменения видны <b>сразу в телефоне</b>.</li>
+            </ul>
+            
+            <h3>⚡ Функции компонентов</h3>
+            <ul>
+                <li>У каждого компонента есть раздел <b>"Функции"</b> в редакторе.</li>
+                <li><b>Кнопка:</b> onClick (действие при клике), onLongClick, navigateTo (переход на экран)</li>
+                <li><b>Поле ввода:</b> onTextChanged (реакция на ввод), onSubmit</li>
+                <li><b>Переключатель:</b> onCheckedChanged (реакция на переключение)</li>
+                <li><b>Слайдер:</b> onValueChanged (реакция на изменение)</li>
+                <li><b>Картинка/Текст/Карточка:</b> onClick (реагируют на нажатие)</li>
+                <li>Нажмите на чипсы с названиями функций, чтобы <b>включить/выключить</b> их.</li>
+            </ul>
+            
+            <h3>💾 Сохранение</h3>
+            <ul>
+                <li>Проект <b>автоматически сохраняется</b> в браузере (localStorage).</li>
+                <li>Кнопка <kbd>💾 Сохранить</kbd> — принудительное сохранение.</li>
+                <li>Кнопка <kbd>📂 Загрузить</kbd> — восстановить последнее сохранение.</li>
+            </ul>
+            
+            <h3>📥 Готовый пример</h3>
+            <ul>
+                <li>Нажмите <kbd>📥 Пример</kbd> — загрузится готовое приложение с кнопкой, текстом, полем ввода и переключателем.</li>
+                <li>Это покажет, как компоненты работают вместе.</li>
+            </ul>
+            
+            <h3>📦 Скачивание</h3>
+            <ul>
+                <li>Кнопка <kbd>📦 Скачать</kbd> генерирует XML-файл разметки Android.</li>
+                <li>Его можно сразу скопировать в проект Android Studio в <kbd>res/layout/activity_main.xml</kbd>.</li>
+            </ul>
+            
+            <h3>⌨️ Горячие клавиши</h3>
+            <ul>
+                <li><kbd>Delete</kbd> — удалить выделенный компонент</li>
+                <li><kbd>Escape</kbd> — снять выделение</li>
+            </ul>
+            
+            <p style="margin-top:20px;font-weight:700;color:var(--primary);">🎉 Всё готово! Начинайте строить своё приложение!</p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== ДАННЫЕ ====================
         const COMPONENTS = [
-            { id: 'container', label: 'Контейнер', icon: '📦', category: 'Layout',
-              defaultProps: { width: '200', height: '100', bgColor: '#f5f3ff', borderRadius: '14', padding: '16', child: null },
-              widget: 'Container' },
-            { id: 'text', label: 'Текст', icon: '📝', category: 'Базовые',
-              defaultProps: { content: 'Привет мир!', fontSize: '18', fontWeight: '700', color: '#1e293b', textAlign: 'left' },
-              widget: 'Text', availableFunctions: ['onTap', 'onLongPress'] },
-            { id: 'button', label: 'Кнопка', icon: '🔘', category: 'Кнопки',
-              defaultProps: { label: 'Нажми меня', bgColor: '#7c3aed', textColor: '#ffffff', fontSize: '16', borderRadius: '12', width: '100%', height: '54', onClick: 'showToast("Кнопка нажата!")' },
-              widget: 'ElevatedButton', availableFunctions: ['onClick', 'onLongClick', 'navigateTo', 'callAPI', 'saveData', 'shareContent'] },
-            { id: 'textfield', label: 'Поле ввода', icon: '⌨️', category: 'Ввод',
-              defaultProps: { hint: 'Введите текст...', fontSize: '15', color: '#1e293b', borderColor: '#e2e8f0', borderRadius: '12', width: '100%', obscureText: false, onChanged: 'updateData(value)' },
-              widget: 'TextField', availableFunctions: ['onChanged', 'onSubmit', 'validateInput'] },
-            { id: 'icon', label: 'Иконка', icon: '⭐', category: 'Базовые',
-              defaultProps: { iconName: 'star', size: '32', color: '#f59e0b' },
-              widget: 'Icon', availableFunctions: ['onTap'] },
-            { id: 'image', label: 'Картинка', icon: '🖼️', category: 'Медиа',
-              defaultProps: { src: 'https://picsum.photos/300/200', width: '100%', height: '200', borderRadius: '14', fit: 'cover' },
-              widget: 'Image', availableFunctions: ['onTap', 'loadFromURL', 'loadFromAssets'] },
-            { id: 'card', label: 'Карточка', icon: '🃏', category: 'Material',
-              defaultProps: { elevation: '4', borderRadius: '16', bgColor: '#ffffff', padding: '20', title: 'Заголовок', subtitle: 'Описание' },
-              widget: 'Card', availableFunctions: ['onTap', 'onSwipe'] },
-            { id: 'switch', label: 'Переключатель', icon: '🔛', category: 'Material',
-              defaultProps: { value: false, activeColor: '#7c3aed', label: 'Включить' },
-              widget: 'Switch', availableFunctions: ['onChanged', 'saveState'] },
-            { id: 'slider', label: 'Слайдер', icon: '🎚️', category: 'Material',
-              defaultProps: { value: 50, min: 0, max: 100, activeColor: '#7c3aed', label: 'Громкость' },
-              widget: 'Slider', availableFunctions: ['onChanged'] },
-            { id: 'appbar', label: 'Шапка', icon: '📱', category: 'Структура',
-              defaultProps: { title: 'Моё приложение', bgColor: '#7c3aed', textColor: '#ffffff', showBackButton: false },
-              widget: 'AppBar', availableFunctions: ['onBackPressed', 'onMenuOpen'] },
-            { id: 'listview', label: 'Список', icon: '📋', category: 'Структура',
-              defaultProps: { items: ['Элемент 1', 'Элемент 2', 'Элемент 3'], itemColor: '#ffffff', dividerColor: '#e2e8f0' },
-              widget: 'ListView', availableFunctions: ['onItemTap', 'onItemLongPress', 'loadData'] },
-            { id: 'bottombar', label: 'Нижнее меню', icon: '📊', category: 'Навигация',
-              defaultProps: { items: ['🏠', '🔍', '❤️', '👤'], activeColor: '#7c3aed', inactiveColor: '#94a3b8' },
-              widget: 'BottomNavigationBar', availableFunctions: ['onTabChange', 'navigateTo'] },
-            { id: 'dialog', label: 'Диалог', icon: '💬', category: 'Обратная связь',
-              defaultProps: { title: 'Внимание!', message: 'Вы уверены?', confirmText: 'Да', cancelText: 'Отмена' },
-              widget: 'AlertDialog', availableFunctions: ['onConfirm', 'onCancel'] },
-            { id: 'snackbar', label: 'Уведомление', icon: '🔔', category: 'Обратная связь',
-              defaultProps: { message: 'Операция выполнена', duration: 3, actionText: 'ОК' },
-              widget: 'SnackBar', availableFunctions: ['onAction', 'autoHide'] },
+            { type:'text', label:'Текст', icon:'📝', cat:'Базовые',
+              props:{ content:'Привет мир!', fontSize:16, fontWeight:'600', color:'#1e293b' },
+              functions:['onClick'] },
+            { type:'button', label:'Кнопка', icon:'🔘', cat:'Базовые',
+              props:{ label:'Нажми меня', bgColor:'#7c3aed', textColor:'#ffffff', fontSize:15, borderRadius:10, height:50, onClick:'' },
+              functions:['onClick','onLongClick','navigateTo'] },
+            { type:'input', label:'Поле ввода', icon:'⌨️', cat:'Ввод',
+              props:{ placeholder:'Введите текст...', fontSize:14, borderColor:'#e2e8f0', borderRadius:10, isPassword:false, onTextChanged:'' },
+              functions:['onTextChanged','onSubmit'] },
+            { type:'image', label:'Картинка', icon:'🖼️', cat:'Медиа',
+              props:{ src:'https://picsum.photos/300/200', height:180, borderRadius:12 },
+              functions:['onClick'] },
+            { type:'card', label:'Карточка', icon:'🃏', cat:'Медиа',
+              props:{ title:'Заголовок', subtitle:'Описание карточки', bgColor:'#ffffff', borderRadius:14, elevation:3 },
+              functions:['onClick'] },
+            { type:'switch', label:'Переключатель', icon:'🔛', cat:'Формы',
+              props:{ label:'Включить', value:false, activeColor:'#7c3aed', onCheckedChanged:'' },
+              functions:['onCheckedChanged'] },
+            { type:'slider', label:'Слайдер', icon:'🎚️', cat:'Формы',
+              props:{ label:'Значение', value:50, min:0, max:100, activeColor:'#7c3aed', onValueChanged:'' },
+              functions:['onValueChanged'] },
+            { type:'container', label:'Контейнер', icon:'📦', cat:'Layout',
+              props:{ width:'100%', height:100, bgColor:'#f5f3ff', borderRadius:12, padding:16 },
+              functions:[] },
+            { type:'avatar', label:'Аватар', icon:'👤', cat:'Базовые',
+              props:{ text:'A', bgColor:'#7c3aed', size:50 },
+              functions:['onClick'] },
+            { type:'listview', label:'Список', icon:'📋', cat:'Структура',
+              props:{ items:['Элемент 1','Элемент 2','Элемент 3'] },
+              functions:['onItemClick'] },
+            { type:'appbar', label:'Шапка', icon:'📱', cat:'Структура',
+              props:{ title:'Моё приложение', bgColor:'#7c3aed', textColor:'#ffffff' },
+              functions:['onBackPressed'] },
         ];
 
-        // ============ ГЕНЕРАТОР ПРОЕКТА ============
-        function generateProject(components, appName) {
-            const zip = new JSZip();
-            const projectName = appName || 'my_app';
-            const root = zip.folder(projectName);
+        let widgets = [];
+        let selectedId = null;
+        let counter = 1;
+        let dragWidgetId = null;
+        let dropIndex = -1;
 
-            // build.gradle (project)
-            root.file('build.gradle', `plugins {
-    id 'com.android.application' version '8.2.0' apply false
-    id 'org.jetbrains.kotlin.android' version '1.9.20' apply false
-}`);
+        // ==================== ОТРИСОВКА ПАНЕЛИ ====================
+        function renderPanel() {
+            const panel = document.getElementById('componentPanel');
+            const cats = [...new Set(COMPONENTS.map(c => c.cat))];
+            let h = '';
+            cats.forEach(cat => {
+                h += `<div class="cat-title">${cat}</div><div class="comp-grid">`;
+                COMPONENTS.filter(c => c.cat === cat).forEach(c => {
+                    h += `<div class="comp-item" draggable="true" data-type="${c.type}" ondragstart="onDragFromPanel(event,'${c.type}')"><span class="comp-icon">${c.icon}</span><span>${c.label}</span></div>`;
+                });
+                h += `</div>`;
+            });
+            panel.innerHTML = h;
+        }
+
+        function onDragFromPanel(e, type) {
+            e.dataTransfer.setData('text/plain', type);
+            e.dataTransfer.effectAllowed = 'copy';
+        }
+
+        // ==================== DROP ZONE ====================
+        function setupDropZone() {
+            const zone = document.getElementById('phoneContent');
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const type = e.dataTransfer.getData('text/plain');
+                if (type && isComponentType(type)) {
+                    addWidget(type);
+                }
+            });
+        }
+
+        function isComponentType(type) {
+            return COMPONENTS.some(c => c.type === type);
+        }
+
+        // ==================== ДОБАВЛЕНИЕ ====================
+        function addWidget(type) {
+            const def = COMPONENTS.find(c => c.type === type);
+            if (!def) return;
+            const w = {
+                id: counter++,
+                type: def.type,
+                label: def.label,
+                props: JSON.parse(JSON.stringify(def.props)),
+                activeFunctions: [],
+            };
+            widgets.push(w);
+            renderPhone();
+            selectWidget(w.id);
+            showToast('✅ ' + def.label + ' добавлен');
+            saveProject();
+        }
+
+        // ==================== ОТРИСОВКА ТЕЛЕФОНА ====================
+        function renderPhone() {
+            const cont = document.getElementById('phoneContent');
+            const appbar = widgets.find(w => w.type === 'appbar');
+            const ab = document.getElementById('phoneAppBar');
             
-            // settings.gradle
-            root.file('settings.gradle', `pluginManagement {
-    repositories { google(); mavenCentral(); gradlePluginPortal() }
-}
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories { google(); mavenCentral() }
-}
-rootProject.name = "${projectName}"
-include ':app'`);
-
-            // gradle.properties
-            root.file('gradle.properties', `android.useAndroidX=true
-kotlin.code.style=official
-android.nonTransitiveRClass=true`);
-
-            // app/build.gradle
-            const appFolder = root.folder('app');
-            appFolder.file('build.gradle', `plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-}
-android {
-    namespace 'com.example.${projectName.toLowerCase()}'
-    compileSdk 34
-    defaultConfig {
-        applicationId "com.example.${projectName.toLowerCase()}"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release { minifyEnabled false }
-    }
-}
-dependencies {
-    implementation 'androidx.core:core-ktx:1.12.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-}`);
-
-            // AndroidManifest.xml
-            const srcFolder = appFolder.folder('src').folder('main');
-            srcFolder.file('AndroidManifest.xml', `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET" />
-    <application
-        android:allowBackup="true"
-        android:label="${projectName}"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.Light.NoActionBar">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-</manifest>`);
-
-            // Layout XML
-            let xml = `<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#f8fafc"
-    android:padding="16dp">
-
-`;
-            components.forEach((comp, i) => {
-                const id = `widget_${i}`;
-                xml += `    <!-- ${comp.label} -->\n`;
-                switch(comp.type) {
-                    case 'text':
-                        xml += `    <TextView android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${comp.props.content}" android:textColor="${comp.props.color}" android:textSize="${comp.props.fontSize}sp" android:textStyle="bold" android:layout_marginBottom="12dp" />\n\n`;
-                        break;
-                    case 'button':
-                        xml += `    <Button android:id="@+id/${id}" android:layout_width="${comp.props.width === '100%' ? 'match_parent' : comp.props.width + 'dp'}" android:layout_height="${comp.props.height}dp" android:text="${comp.props.label}" android:backgroundTint="${comp.props.bgColor}" android:textColor="${comp.props.textColor}" android:textSize="${comp.props.fontSize}sp" android:insetTop="0dp" android:insetBottom="0dp" app:cornerRadius="${comp.props.borderRadius}dp" android:layout_marginBottom="12dp" />\n\n`;
-                        break;
-                    case 'textfield':
-                        xml += `    <EditText android:id="@+id/${id}" android:layout_width="${comp.props.width === '100%' ? 'match_parent' : comp.props.width + 'dp'}" android:layout_height="wrap_content" android:hint="${comp.props.hint}" android:textSize="${comp.props.fontSize}sp" android:padding="14dp" android:background="@drawable/edittext_bg" android:inputType="${comp.props.obscureText ? 'textPassword' : 'text'}" android:layout_marginBottom="12dp" />\n\n`;
-                        break;
-                    case 'image':
-                        xml += `    <ImageView android:id="@+id/${id}" android:layout_width="${comp.props.width === '100%' ? 'match_parent' : comp.props.width + 'dp'}" android:layout_height="${comp.props.height}dp" android:scaleType="centerCrop" android:background="@drawable/image_placeholder" app:cornerRadius="${comp.props.borderRadius}dp" android:layout_marginBottom="12dp" />\n\n`;
-                        break;
-                    case 'card':
-                        xml += `    <androidx.cardview.widget.CardView android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" app:cardElevation="${comp.props.elevation}dp" app:cardCornerRadius="${comp.props.borderRadius}dp" app:cardBackgroundColor="${comp.props.bgColor}" android:padding="${comp.props.padding}dp" android:layout_marginBottom="12dp"><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${comp.props.title}" android:textSize="18sp" android:textStyle="bold" /><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${comp.props.subtitle}" android:textSize="14sp" android:textColor="#64748b" /></LinearLayout></androidx.cardview.widget.CardView>\n\n`;
-                        break;
-                    case 'switch':
-                        xml += `    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp"><TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="${comp.props.label}" android:textSize="15sp" /><Switch android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:checked="${comp.props.value}" /></LinearLayout>\n\n`;
-                        break;
-                    case 'slider':
-                        xml += `    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginBottom="12dp"><TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${comp.props.label}: ${comp.props.value}" android:id="@+id/${id}_label" android:textSize="14sp" /><SeekBar android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="${comp.props.max}" android:progress="${comp.props.value}" android:thumbTint="${comp.props.activeColor}" android:progressTint="${comp.props.activeColor}" /></LinearLayout>\n\n`;
-                        break;
-                    default:
-                        xml += `    <View android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="60dp" android:background="#f1f5f9" android:layout_marginBottom="12dp" />\n\n`;
-                }
-            });
-            xml += `</LinearLayout>`;
-            const layoutFolder = srcFolder.folder('res').folder('layout');
-            layoutFolder.file('activity_main.xml', xml);
-
-            // MainActivity.kt
-            let kotlin = `package com.example.${projectName.toLowerCase()}
-
-import android.os.Bundle
-import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
-import androidx.cardview.widget.CardView
-
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-`;
-            components.forEach((comp, i) => {
-                const id = `widget_${i}`;
-                if (comp.type === 'button') {
-                    kotlin += `        findViewById<Button>(R.id.${id}).setOnClickListener {
-            ${comp.props.onClick || 'Toast.makeText(this, "Кнопка нажата!", Toast.LENGTH_SHORT).show()'}
-        }\n`;
-                }
-                if (comp.type === 'switch') {
-                    kotlin += `        findViewById<Switch>(R.id.${id}).setOnCheckedChangeListener { _, isChecked ->
-            Toast.makeText(this, "Переключатель: \$isChecked", Toast.LENGTH_SHORT).show()
-        }\n`;
-                }
-                if (comp.type === 'slider') {
-                    kotlin += `        findViewById<SeekBar>(R.id.${id}).setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                findViewById<TextView>(R.id.${id}_label).text = "${comp.props.label}: \$progress"
+            if (appbar) {
+                ab.textContent = appbar.props.title;
+                ab.style.background = appbar.props.bgColor;
+                ab.style.color = appbar.props.textColor;
+                ab.style.display = '';
+            } else {
+                ab.style.display = 'none';
             }
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })\n`;
-                }
-                if (comp.type === 'card') {
-                    kotlin += `        findViewById<CardView>(R.id.${id}).setOnClickListener {
-            Toast.makeText(this, "Карточка нажата!", Toast.LENGTH_SHORT).show()
-        }\n`;
-                }
-            });
-
-            kotlin += `    }
-}`;
-            const javaFolder = srcFolder.folder('java').folder('com').folder('example').folder(projectName.toLowerCase());
-            javaFolder.file('MainActivity.kt', kotlin);
-
-            // RES
-            const resFolder = srcFolder.folder('res');
-            resFolder.folder('values').file('themes.xml', `<resources><style name="Theme.Material3.Light.NoActionBar" parent="Theme.Material3.Light"><item name="colorPrimary">#7c3aed</item></style></resources>`);
-
-            zip.generateAsync({ type: 'blob' }).then(blob => {
-                saveAs(blob, `${projectName}.zip`);
-            });
+            
+            const others = widgets.filter(w => w.type !== 'appbar');
+            if (others.length === 0) {
+                cont.innerHTML = `<div class="empty-phone"><div style="font-size:60px;">📱</div><div style="font-weight:700;">Перетащите компоненты сюда</div><button class="btn btn-warning btn-sm" onclick="loadExample()" style="margin-top:8px;">Загрузить пример</button></div>`;
+            } else {
+                cont.innerHTML = others.map((w, idx) => {
+                    const sel = w.id === selectedId ? ' selected' : '';
+                    const func = w.activeFunctions && w.activeFunctions.length > 0 ? ' has-function' : '';
+                    return `<div class="widget-wrapper${sel}${func}" data-id="${w.id}" data-index="${idx}" 
+                                onmousedown="onWidgetMouseDown(event, ${w.id})"
+                                onclick="event.stopPropagation(); selectWidget(${w.id});">
+                                ${renderWidgetHTML(w)}
+                            </div>`;
+                }).join('');
+                
+                // Перетаскивание внутри телефона
+                cont.querySelectorAll('.widget-wrapper').forEach(el => {
+                    el.addEventListener('dragover', onWidgetDragOver);
+                    el.addEventListener('dragleave', onWidgetDragLeave);
+                    el.addEventListener('drop', onWidgetDrop);
+                    el.setAttribute('draggable', 'true');
+                    el.addEventListener('dragstart', onWidgetDragStart);
+                    el.addEventListener('dragend', onWidgetDragEnd);
+                });
+            }
+            updateCount();
         }
 
-        function validateComponent(comp) {
-            const errors = [];
-            if (comp.type === 'button' && (!comp.props.label || comp.props.label.trim() === '')) {
-                errors.push('Укажите текст кнопки');
+        function renderWidgetHTML(w) {
+            const p = w.props;
+            switch(w.type) {
+                case 'text': return `<div class="w-text" style="font-size:${p.fontSize}px;font-weight:${p.fontWeight};color:${p.color};">${esc(p.content)}</div>`;
+                case 'button': return `<div class="w-button" style="height:${p.height}px;background:${p.bgColor};color:${p.textColor};font-size:${p.fontSize}px;border-radius:${p.borderRadius}px;">${esc(p.label)}</div>`;
+                case 'input': return `<input class="w-input" type="${p.isPassword?'password':'text'}" placeholder="${esc(p.placeholder)}" style="font-size:${p.fontSize}px;border-color:${p.borderColor};border-radius:${p.borderRadius}px;" readonly>`;
+                case 'image': return `<div class="w-image" style="height:${p.height}px;border-radius:${p.borderRadius}px;">${p.src ? '<img src="'+p.src+'" style="width:100%;height:100%;object-fit:cover;border-radius:'+p.borderRadius+'px;" onerror="this.style.display=\'none\'">' : '🖼️'}</div>`;
+                case 'card': return `<div class="w-card" style="background:${p.bgColor};border-radius:${p.borderRadius}px;box-shadow:0 ${p.elevation}px ${p.elevation*2}px rgba(0,0,0,0.08);"><div style="font-size:17px;font-weight:700;margin-bottom:4px;">${esc(p.title)}</div><div style="font-size:13px;color:#64748b;">${esc(p.subtitle)}</div></div>`;
+                case 'switch': return `<div class="w-switch-row"><span style="font-weight:500;">${esc(p.label)}</span><div class="w-switch-track" style="background:${p.value ? p.activeColor : '#cbd5e1'};"><div class="w-switch-thumb" style="left:${p.value ? '22px' : '2px'};"></div></div></div>`;
+                case 'slider': return `<div class="w-slider-wrap"><div style="font-size:13px;font-weight:600;">${esc(p.label)}: ${p.value}%</div><div class="w-slider-track"><div class="w-slider-fill" style="width:${p.value}%;background:${p.activeColor};"></div><div class="w-slider-thumb" style="left:calc(${p.value}% - 11px);background:${p.activeColor};"></div></div></div>`;
+                case 'container': return `<div class="w-container" style="width:${p.width};height:${p.height}px;background:${p.bgColor};border-radius:${p.borderRadius}px;padding:${p.padding}px;">📦 Контейнер</div>`;
+                case 'avatar': return `<div class="w-avatar" style="width:${p.size}px;height:${p.size}px;background:${p.bgColor};font-size:${p.size/2.5}px;">${p.text}</div>`;
+                case 'listview': {
+                    const items = Array.isArray(p.items) ? p.items : ['Элемент 1'];
+                    return `<div class="w-listview">${items.map(it => '<div class="w-listview-item">'+esc(it)+'</div>').join('')}</div>`;
+                }
+                default: return `<div style="padding:10px;background:#f1f5f9;border-radius:8px;">${w.label}</div>`;
             }
-            if (comp.type === 'text' && (!comp.props.content || comp.props.content.trim() === '')) {
-                errors.push('Укажите содержимое текста');
-            }
-            if (comp.type === 'image' && (!comp.props.src || comp.props.src.trim() === '')) {
-                errors.push('Укажите URL изображения');
-            }
-            return errors;
         }
 
-        // ============ ПРИЛОЖЕНИЕ ============
-        function App() {
-            const [phoneComponents, setPhoneComponents] = useState([]);
-            const [selectedId, setSelectedId] = useState(null);
-            const [dragOver, setDragOver] = useState(false);
-            const [toast, setToast] = useState(null);
-            const [appName, setAppName] = useState('MySuperApp');
-            const [activeFunctions, setActiveFunctions] = useState({});
+        function esc(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
 
-            const showToast = (msg) => {
-                setToast(msg);
-                setTimeout(() => setToast(null), 2500);
-            };
+        // ==================== DRAG ВНУТРИ ТЕЛЕФОНА ====================
+        function onWidgetMouseDown(e, id) {
+            if (e.target.tagName === 'INPUT') return;
+            dragWidgetId = id;
+        }
 
-            const handleDragStart = (e, comp) => {
-                e.dataTransfer.setData('component', JSON.stringify(comp));
-                e.dataTransfer.effectAllowed = 'copy';
-            };
+        function onWidgetDragStart(e) {
+            const wrapper = e.target.closest('.widget-wrapper');
+            if (!wrapper) { e.preventDefault(); return; }
+            dragWidgetId = parseInt(wrapper.dataset.id);
+            e.dataTransfer.setData('text/plain', 'move');
+            e.dataTransfer.effectAllowed = 'move';
+            wrapper.style.opacity = '0.4';
+        }
 
-            const handleDrop = (e) => {
-                e.preventDefault();
-                setDragOver(false);
-                try {
-                    const compData = JSON.parse(e.dataTransfer.getData('component'));
-                    const newComp = {
-                        id: Date.now(),
-                        ...compData,
-                        props: { ...compData.defaultProps },
-                        errors: [],
-                        activeFunctions: [],
-                    };
-                    setPhoneComponents(prev => [...prev, newComp]);
-                    setSelectedId(newComp.id);
-                    showToast(`✅ ${compData.label} добавлен`);
-                } catch (err) {
-                    showToast('❌ Ошибка добавления');
-                }
-            };
+        function onWidgetDragEnd(e) {
+            const wrapper = e.target.closest('.widget-wrapper');
+            if (wrapper) wrapper.style.opacity = '1';
+            document.querySelectorAll('#phoneContent .widget-wrapper').forEach(el => {
+                el.style.borderTop = '';
+            });
+            dragWidgetId = null;
+            dropIndex = -1;
+        }
 
-            const handleDragOver = (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'copy';
-                setDragOver(true);
-            };
-            const handleDragLeave = () => setDragOver(false);
-            const selectComponent = (id) => setSelectedId(id);
+        function onWidgetDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const wrapper = e.target.closest('.widget-wrapper');
+            if (wrapper && dragWidgetId) {
+                const idx = parseInt(wrapper.dataset.index);
+                dropIndex = idx;
+                document.querySelectorAll('#phoneContent .widget-wrapper').forEach(el => el.style.borderTop = '');
+                wrapper.style.borderTop = '3px solid #10b981';
+            }
+        }
 
-            const updateProp = (id, key, value) => {
-                setPhoneComponents(prev => prev.map(c => {
-                    if (c.id === id) {
-                        const newProps = { ...c.props, [key]: value };
-                        const errors = validateComponent({ ...c, props: newProps });
-                        return { ...c, props: newProps, errors };
-                    }
-                    return c;
-                }));
-            };
+        function onWidgetDragLeave(e) {
+            e.target.closest('.widget-wrapper')?.style && (e.target.closest('.widget-wrapper').style.borderTop = '');
+        }
 
-            const toggleFunction = (compId, funcName) => {
-                setPhoneComponents(prev => prev.map(c => {
-                    if (c.id === compId) {
-                        const current = c.activeFunctions || [];
-                        const updated = current.includes(funcName)
-                            ? current.filter(f => f !== funcName)
-                            : [...current, funcName];
-                        return { ...c, activeFunctions: updated };
-                    }
-                    return c;
-                }));
-            };
+        function onWidgetDrop(e) {
+            e.preventDefault();
+            document.querySelectorAll('#phoneContent .widget-wrapper').forEach(el => el.style.borderTop = '');
+            if (!dragWidgetId) return;
+            
+            const wrapper = e.target.closest('.widget-wrapper');
+            if (!wrapper) return;
+            
+            const targetIdx = parseInt(wrapper.dataset.index);
+            moveWidget(dragWidgetId, targetIdx);
+            dragWidgetId = null;
+            dropIndex = -1;
+        }
 
-            const deleteComponent = (id) => {
-                setPhoneComponents(prev => prev.filter(c => c.id !== id));
-                if (selectedId === id) setSelectedId(null);
-                showToast('🗑️ Удалено');
-            };
+        function moveWidget(id, targetIdx) {
+            const others = widgets.filter(w => w.type !== 'appbar');
+            const appbar = widgets.filter(w => w.type === 'appbar');
+            const idx = others.findIndex(w => w.id === id);
+            if (idx === -1 || idx === targetIdx) return;
+            
+            const [moved] = others.splice(idx, 1);
+            others.splice(targetIdx, 0, moved);
+            
+            widgets = [...appbar, ...others];
+            renderPhone();
+            saveProject();
+            showToast('↕️ Порядок изменён');
+        }
 
-            const clearAll = () => {
-                setPhoneComponents([]);
-                setSelectedId(null);
-                showToast('🧹 Холст очищен');
-            };
+        // ==================== ВЫБОР ====================
+        function selectWidget(id) {
+            selectedId = id;
+            renderPhone();
+            renderInspector();
+        }
 
-            const handleDownload = () => {
-                if (phoneComponents.length === 0) {
-                    showToast('⚠️ Добавьте компоненты!');
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.widget-wrapper') && !e.target.closest('#inspectorPanel') && !e.target.closest('#componentPanel') && !e.target.closest('.btn')) {
+                selectedId = null;
+                renderPhone();
+                renderInspector();
+            }
+        });
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Delete' && selectedId) {
+                deleteWidget(selectedId);
+            }
+            if (e.key === 'Escape') {
+                selectedId = null;
+                renderPhone();
+                renderInspector();
+            }
+        });
+
+        // ==================== ИНСПЕКТОР ====================
+        function renderInspector() {
+            const panel = document.getElementById('inspectorPanel');
+            const w = widgets.find(w => w.id === selectedId);
+            if (!w) {
+                panel.innerHTML = '<div class="insp-empty"><div style="font-size:50px;">👈</div><div style="font-weight:700;">Выберите компонент</div><div>Кликните по элементу в телефоне</div><div style="font-size:12px;color:#94a3b8;">Его можно двигать зажав мышкой</div></div>';
+                return;
+            }
+            
+            let h = `<div class="insp-content"><div class="insp-header"><span>⚙️ ${w.label}</span><button class="btn btn-danger btn-sm" onclick="deleteWidget(${w.id})">🗑️ Удалить</button></div>`;
+            
+            // ФУНКЦИИ
+            const compDef = COMPONENTS.find(c => c.type === w.type);
+            if (compDef && compDef.functions && compDef.functions.length > 0) {
+                h += `<div class="prop-section"><div class="prop-label">⚡ Функции компонента</div>`;
+                compDef.functions.forEach(fn => {
+                    const isActive = w.activeFunctions && w.activeFunctions.includes(fn);
+                    h += `<span class="func-chip${isActive ? ' active' : ''}" onclick="toggleFunction(${w.id},'${fn}')">${fn}</span>`;
+                });
+                h += `<div class="info-box" style="margin-top:8px;"><h4>💡 Как работают функции</h4><p>Включённые функции будут добавлены в код при скачивании. Например, <b>onClick</b> создаст обработчик нажатия на кнопку. Настройте действие в поле ниже.</p></div>`;
+                h += `</div>`;
+            }
+            
+            // СВОЙСТВА
+            Object.entries(w.props).forEach(([key, val]) => {
+                // Пропускаем свойства-функции
+                if (['onClick','onLongClick','navigateTo','onTextChanged','onSubmit','onCheckedChanged','onValueChanged','onBackPressed','onItemClick'].includes(key)) {
+                    h += `<div class="prop-section"><div class="prop-label">⚡ ${key}</div>`;
+                    h += `<textarea class="prop-textarea" rows="3" onchange="updateProp(${w.id},'${key}',this.value)">${val || ''}</textarea>`;
+                    h += `<div style="font-size:10px;color:#64748b;margin-top:4px;">Пример: showToast("Готово!")</div>`;
+                    h += `</div>`;
                     return;
                 }
-                generateProject(phoneComponents, appName);
-                showToast('📦 Проект скачан! Откройте в Android Studio');
-            };
-
-            const selected = phoneComponents.find(c => c.id === selectedId);
-            const totalErrors = phoneComponents.reduce((sum, c) => sum + c.errors.length, 0);
-            const totalFunctions = phoneComponents.reduce((sum, c) => sum + (c.activeFunctions?.length || 0), 0);
-
-            // Рендер компонента в телефоне
-            const renderPreview = (comp) => {
-                const { props } = comp;
-                const isSelected = selectedId === comp.id;
-                const hasError = comp.errors?.length > 0;
-                const base = { marginBottom: '14px', position: 'relative' };
-
-                switch(comp.type) {
-                    case 'container':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''} ${hasError ? 'error-comp' : ''}`}
-                                 style={{ ...base, width: props.width+'px', height: props.height+'px', background: props.bgColor, borderRadius: props.borderRadius+'px', padding: props.padding+'px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 13, color: '#64748b', fontWeight: 600 }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                📦 Контейнер
-                                {hasError && <div className="error-badge">!</div>}
-                            </div>
-                        );
-                    case 'text':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''} ${hasError ? 'error-comp' : ''}`}
-                                 style={{ ...base, fontSize: props.fontSize+'px', fontWeight: props.fontWeight, color: props.color, textAlign: props.textAlign, cursor: 'pointer', padding: '4px 0' }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                {props.content}
-                                {comp.activeFunctions?.includes('onTap') && <span className="function-tag">onTap</span>}
-                                {hasError && <div className="error-badge">!</div>}
-                            </div>
-                        );
-                    case 'button':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''} ${hasError ? 'error-comp' : ''}`}
-                                 style={{ ...base, width: props.width, height: props.height+'px', background: props.bgColor, color: props.textColor, borderRadius: props.borderRadius+'px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: props.fontSize+'px', fontWeight: 700, letterSpacing: '-0.2px', gap: 8 }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                {props.label}
-                                {comp.activeFunctions?.length > 0 && <span className="function-tag" style={{ background: 'rgba(255,255,255,0.3)', color: 'white' }}>{comp.activeFunctions[0]}</span>}
-                                {hasError && <div className="error-badge">!</div>}
-                            </div>
-                        );
-                    case 'textfield':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''} ${hasError ? 'error-comp' : ''}`}
-                                 style={{ ...base, width: props.width, cursor: 'pointer' }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                <input type={props.obscureText ? 'password' : 'text'} placeholder={props.hint}
-                                       style={{ width: '100%', padding: '14px 18px', border: '2px solid ' + props.borderColor, borderRadius: props.borderRadius+'px', fontSize: props.fontSize+'px', background: 'white', outline: 'none', pointerEvents: 'none', fontWeight: 500 }}
-                                       readOnly />
-                                {hasError && <div className="error-badge">!</div>}
-                            </div>
-                        );
-                    case 'image':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''} ${hasError ? 'error-comp' : ''}`}
-                                 style={{ ...base, width: props.width, height: props.height+'px', borderRadius: props.borderRadius+'px', overflow: 'hidden', cursor: 'pointer', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                {props.src ? <img src={props.src} style={{ width: '100%', height: '100%', objectFit: props.fit }} alt="" /> : '🖼️'}
-                                {hasError && <div className="error-badge">!</div>}
-                            </div>
-                        );
-                    case 'card':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''} ${hasError ? 'error-comp' : ''}`}
-                                 style={{ ...base, background: props.bgColor, borderRadius: props.borderRadius+'px', padding: props.padding+'px', boxShadow: `0 ${props.elevation}px ${props.elevation*3}px rgba(0,0,0,0.08)`, cursor: 'pointer' }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{props.title}</div>
-                                <div style={{ fontSize: 13, color: '#64748b' }}>{props.subtitle}</div>
-                                {hasError && <div className="error-badge">!</div>}
-                            </div>
-                        );
-                    case 'switch':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''}`}
-                                 style={{ ...base, display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '8px 0' }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                <span style={{ fontSize: 15, fontWeight: 500, flex: 1 }}>{props.label}</span>
-                                <div style={{ width: 48, height: 28, borderRadius: 14, background: props.value ? props.activeColor : '#cbd5e1', position: 'relative', transition: 'all 0.3s', flexShrink: 0 }}>
-                                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'white', position: 'absolute', top: 2, left: props.value ? 22 : 2, transition: 'all 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}></div>
-                                </div>
-                            </div>
-                        );
-                    case 'slider':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''}`}
-                                 style={{ ...base, cursor: 'pointer', padding: '4px 0' }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>{props.label}: {props.value}%</div>
-                                <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, position: 'relative' }}>
-                                    <div style={{ width: props.value + '%', height: '100%', background: props.activeColor, borderRadius: 3 }}></div>
-                                    <div style={{ width: 22, height: 22, borderRadius: '50%', background: props.activeColor, position: 'absolute', top: -8, left: `calc(${props.value}% - 11px)`, boxShadow: '0 3px 8px rgba(0,0,0,0.2)' }}></div>
-                                </div>
-                            </div>
-                        );
-                    case 'appbar':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''}`}
-                                 style={{ ...base, background: props.bgColor, color: props.textColor, padding: '18px 22px', fontWeight: 800, fontSize: 19, cursor: 'pointer', borderRadius: '0 0 16px 16px', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 12 }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                {props.showBackButton && <span>←</span>}
-                                {props.title}
-                            </div>
-                        );
-                    case 'listview':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''}`}
-                                 style={{ ...base, background: 'white', borderRadius: 14, overflow: 'hidden', cursor: 'pointer', border: '1px solid #e2e8f0' }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                {props.items.map((item, idx) => (
-                                    <div key={idx} style={{ padding: '14px 18px', borderBottom: idx < props.items.length-1 ? '1px solid '+props.dividerColor : 'none', fontSize: 14, fontWeight: 500, background: props.itemColor }}>
-                                        {item}
-                                    </div>
-                                ))}
-                            </div>
-                        );
-                    case 'bottombar':
-                        return (
-                            <div className={`preview-component ${isSelected ? 'selected' : ''}`}
-                                 style={{ ...base, display: 'flex', justifyContent: 'space-around', padding: '14px 0', background: 'white', borderRadius: '16px 16px 0 0', borderTop: '1px solid #e2e8f0', cursor: 'pointer', position: 'absolute', bottom: 0, left: 0, right: 0, marginBottom: 0 }}
-                                 onClick={() => selectComponent(comp.id)}>
-                                {props.items.map((item, idx) => (
-                                    <span key={idx} style={{ fontSize: 22, color: idx === 0 ? props.activeColor : props.inactiveColor }}>{item}</span>
-                                ))}
-                            </div>
-                        );
-                    default:
-                        return null;
+                
+                h += `<div class="prop-section"><div class="prop-label">${labelMap(key)}</div>`;
+                if (typeof val === 'string' && key.includes('olor')) {
+                    h += `<div class="color-row"><input type="color" class="color-box" value="${val}" onchange="updateProp(${w.id},'${key}',this.value)"><input class="prop-input" style="flex:1" value="${val}" onchange="updateProp(${w.id},'${key}',this.value)"></div>`;
+                } else if (typeof val === 'boolean') {
+                    h += `<select class="prop-select" onchange="updateProp(${w.id},'${key}',this.value==='true')"><option value="true" ${val?'selected':''}>Да</option><option value="false" ${!val?'selected':''}>Нет</option></select>`;
+                } else if (typeof val === 'number') {
+                    h += `<input type="number" class="prop-input" value="${val}" onchange="updateProp(${w.id},'${key}',Number(this.value))">`;
+                } else if (key === 'items') {
+                    h += `<textarea class="prop-textarea" rows="4" onchange="updateProp(${w.id},'${key}',this.value.split('\\n'))">${Array.isArray(val) ? val.join('\n') : val}</textarea>`;
+                } else {
+                    h += `<input class="prop-input" value="${esc(String(val))}" onchange="updateProp(${w.id},'${key}',this.value)">`;
                 }
-            };
-
-            return (
-                <div className="app">
-                    <div className="toolbar">
-                        <div className="toolbar-left">
-                            <div className="logo">
-                                <span className="logo-icon">🚀</span>
-                                App Free Builder
-                            </div>
-                            {totalErrors > 0 && <span className="badge badge-error">⚠️ {totalErrors} ошибок</span>}
-                            {totalFunctions > 0 && <span className="badge badge-success">⚡ {totalFunctions} функций</span>}
-                        </div>
-                        <div className="toolbar-actions">
-                            <input className="input-sm" value={appName} onChange={(e) => setAppName(e.target.value)} placeholder="Название проекта" />
-                            <button className="btn btn-outline" onClick={clearAll}>🧹 Очистить</button>
-                            <button className="btn btn-success" onClick={handleDownload}>📦 Скачать проект</button>
-                        </div>
-                    </div>
-
-                    <div className="main-content">
-                        {/* Sidebar */}
-                        <div className="sidebar">
-                            {['Layout', 'Базовые', 'Кнопки', 'Ввод', 'Медиа', 'Material', 'Структура', 'Навигация', 'Обратная связь'].map(cat => (
-                                <div key={cat}>
-                                    <div className="category-label">{cat}</div>
-                                    <div className="component-grid">
-                                        {COMPONENTS.filter(c => c.category === cat).map(comp => (
-                                            <div key={comp.id} className="component-card" draggable onDragStart={(e) => handleDragStart(e, comp)}>
-                                                <span className="component-icon">{comp.icon}</span>
-                                                <span>{comp.label}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Phone Preview */}
-                        <div className="phone-wrapper">
-                            <div className="phone">
-                                <div className="phone-notch"></div>
-                                <div className="phone-screen">
-                                    <div className="phone-statusbar"><span>9:41</span><span>📶 🔋</span></div>
-                                    <div className="phone-appbar">
-                                        {phoneComponents.find(c => c.type === 'appbar')?.props?.title || 'Моё приложение'}
-                                    </div>
-                                    <div className={`phone-body ${dragOver ? 'drag-over' : ''}`}
-                                         onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}
-                                         onClick={() => setSelectedId(null)}>
-                                        {phoneComponents.filter(c => c.type !== 'appbar' && c.type !== 'bottombar').map(comp => (
-                                            <div key={comp.id} onClick={(e) => { e.stopPropagation(); selectComponent(comp.id); }}>
-                                                {renderPreview(comp)}
-                                            </div>
-                                        ))}
-                                        {phoneComponents.filter(c => c.type === 'bottombar').map(comp => (
-                                            <div key={comp.id} onClick={(e) => { e.stopPropagation(); selectComponent(comp.id); }}>
-                                                {renderPreview(comp)}
-                                            </div>
-                                        ))}
-                                        {phoneComponents.length === 0 && (
-                                            <div className="empty-preview">
-                                                <div className="empty-preview-icon">📱</div>
-                                                <div style={{ fontSize: 16, fontWeight: 700 }}>Перетащите компоненты</div>
-                                                <div style={{ fontSize: 13 }}>Из панели слева</div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Inspector */}
-                        <div className="inspector">
-                            {selected ? (
-                                <>
-                                    <div className="inspector-header">
-                                        <span>⚙️ {selected.label}</span>
-                                        <button className="btn btn-danger" style={{ padding: '8px 16px', fontSize: 12 }} onClick={() => deleteComponent(selected.id)}>🗑️</button>
-                                    </div>
-                                    <div className="inspector-content">
-                                        {selected.errors?.length > 0 && (
-                                            <div className="error-panel">
-                                                <span>⚠️</span>
-                                                <div>{selected.errors.map((e, i) => <div key={i}>{e}</div>)}</div>
-                                            </div>
-                                        )}
-
-                                        {/* Функции компонента */}
-                                        {selected.availableFunctions && selected.availableFunctions.length > 0 && (
-                                            <div className="function-panel">
-                                                <div style={{ fontWeight: 700, marginBottom: 6 }}>⚡ Доступные функции</div>
-                                                <div className="function-list">
-                                                    {selected.availableFunctions.map(func => (
-                                                        <div key={func}
-                                                             className={`function-chip ${selected.activeFunctions?.includes(func) ? 'active' : ''}`}
-                                                             onClick={() => toggleFunction(selected.id, func)}>
-                                                            {func}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Свойства */}
-                                        {Object.entries(selected.props).map(([key, value]) => (
-                                            <div className="prop-section" key={key}>
-                                                <div className="prop-label">
-                                                    {key === 'bgColor' ? '🎨 Фон' :
-                                                     key === 'textColor' || key === 'color' ? '🎨 Цвет' :
-                                                     key === 'activeColor' ? '🎨 Активный' :
-                                                     key === 'content' ? '📝 Текст' :
-                                                     key === 'label' ? '🏷️ Название' :
-                                                     key === 'title' ? '📌 Заголовок' :
-                                                     key === 'subtitle' ? '📄 Подзаголовок' :
-                                                     key === 'hint' ? '💡 Подсказка' :
-                                                     key === 'message' ? '💬 Сообщение' :
-                                                     key === 'fontSize' ? '🔤 Шрифт' :
-                                                     key === 'fontWeight' ? '🔤 Жирность' :
-                                                     key === 'borderRadius' ? '📐 Радиус' :
-                                                     key === 'width' ? '↔️ Ширина' :
-                                                     key === 'height' ? '↕️ Высота' :
-                                                     key === 'padding' ? '📏 Отступ' :
-                                                     key === 'elevation' ? '📶 Тень' :
-                                                     key === 'src' ? '🖼️ URL' :
-                                                     key === 'value' ? '📊 Значение' :
-                                                     key === 'onClick' ? '⚡ Действие' :
-                                                     key}
-                                                </div>
-                                                {key.includes('olor') || key.includes('Color') ? (
-                                                    <div className="prop-color-wrap">
-                                                        <input type="color" className="prop-color-input" value={value} onChange={(e) => updateProp(selected.id, key, e.target.value)} />
-                                                        <input className="prop-input" style={{ flex: 1, marginBottom: 0 }} value={value} onChange={(e) => updateProp(selected.id, key, e.target.value)} />
-                                                    </div>
-                                                ) : typeof value === 'boolean' ? (
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', padding: '8px 0' }}>
-                                                        <input type="checkbox" checked={value} onChange={(e) => updateProp(selected.id, key, e.target.checked)} style={{ width: 22, height: 22 }} />
-                                                        <span style={{ fontWeight: 500 }}>{value ? 'Да' : 'Нет'}</span>
-                                                    </label>
-                                                ) : (
-                                                    <input className="prop-input" value={value} onChange={(e) => updateProp(selected.id, key, e.target.value)} />
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="empty-inspector">
-                                    <div style={{ fontSize: 50 }}>👈</div>
-                                    <div style={{ fontSize: 16, fontWeight: 700 }}>Выберите компонент</div>
-                                    <div style={{ fontSize: 13 }}>Нажмите на компонент в превью</div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    {toast && <div className="toast">{toast}</div>}
-                </div>
-            );
+                h += `</div>`;
+            });
+            
+            h += `</div>`;
+            panel.innerHTML = h;
         }
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        function toggleFunction(widgetId, funcName) {
+            const w = widgets.find(w => w.id === widgetId);
+            if (!w) return;
+            if (!w.activeFunctions) w.activeFunctions = [];
+            if (w.activeFunctions.includes(funcName)) {
+                w.activeFunctions = w.activeFunctions.filter(f => f !== funcName);
+            } else {
+                w.activeFunctions.push(funcName);
+            }
+            renderPhone();
+            renderInspector();
+            saveProject();
+        }
+
+        function labelMap(key) {
+            const m = {
+                content:'📝 Текст', label:'🏷️ Название', title:'📌 Заголовок', subtitle:'📄 Подзаголовок',
+                placeholder:'💡 Подсказка', text:'📝 Текст', fontSize:'🔤 Размер шрифта',
+                fontWeight:'🔤 Жирность', bgColor:'🎨 Фон', textColor:'🎨 Цвет текста',
+                color:'🎨 Цвет', activeColor:'🎨 Активный', borderColor:'🎨 Рамка',
+                width:'↔️ Ширина', height:'↕️ Высота', size:'📏 Размер',
+                borderRadius:'📐 Скругление', padding:'📏 Отступы', elevation:'📶 Тень',
+                src:'🖼️ URL', value:'📊 Значение', min:'⬇️ Мин', max:'⬆️ Макс',
+                isPassword:'🔒 Пароль', items:'📋 Элементы',
+            };
+            return m[key] || key;
+        }
+
+        function updateProp(id, key, value) {
+            const w = widgets.find(w => w.id === id);
+            if (!w) return;
+            w.props[key] = value;
+            renderPhone();
+            saveProject();
+        }
+
+        function deleteWidget(id) {
+            widgets = widgets.filter(w => w.id !== id);
+            if (selectedId === id) selectedId = null;
+            renderPhone();
+            renderInspector();
+            saveProject();
+            showToast('🗑️ Удалено');
+        }
+
+        function clearAll() {
+            if (!widgets.length) return;
+            if (confirm('Удалить все компоненты?')) {
+                widgets = []; selectedId = null;
+                renderPhone(); renderInspector(); saveProject();
+                showToast('🧹 Очищено');
+            }
+        }
+
+        // ==================== ПРИМЕР ====================
+        function loadExample() {
+            widgets = [];
+            counter = 1;
+            
+            // AppBar
+            addWidgetSilent('appbar');
+            const ab = widgets[0];
+            ab.props = { title:'Пример приложения', bgColor:'#7c3aed', textColor:'#ffffff' };
+            
+            // Текст приветствия
+            addWidgetSilent('text');
+            widgets[1].props = { content:'Добро пожаловать! 👋', fontSize:20, fontWeight:'700', color:'#1e293b' };
+            
+            // Карточка
+            addWidgetSilent('card');
+            widgets[2].props = { title:'Карточка профиля', subtitle:'Это пример карточки с тенью', bgColor:'#ffffff', borderRadius:14, elevation:4 };
+            widgets[2].activeFunctions = ['onClick'];
+            
+            // Поле ввода
+            addWidgetSilent('input');
+            widgets[3].props = { placeholder:'Введите ваше имя...', fontSize:14, borderColor:'#e2e8f0', borderRadius:10, isPassword:false };
+            widgets[3].activeFunctions = ['onTextChanged'];
+            
+            // Кнопка
+            addWidgetSilent('button');
+            widgets[4].props = { label:'Сохранить', bgColor:'#10b981', textColor:'#ffffff', fontSize:16, borderRadius:12, height:54, onClick:'saveData()' };
+            widgets[4].activeFunctions = ['onClick'];
+            
+            // Переключатель
+            addWidgetSilent('switch');
+            widgets[5].props = { label:'Тёмная тема', value:false, activeColor:'#7c3aed' };
+            widgets[5].activeFunctions = ['onCheckedChanged'];
+            
+            selectedId = null;
+            renderPhone();
+            renderInspector();
+            saveProject();
+            showToast('📥 Пример загружен! Изучайте и меняйте');
+        }
+
+        function addWidgetSilent(type) {
+            const def = COMPONENTS.find(c => c.type === type);
+            if (!def) return;
+            widgets.push({
+                id: counter++,
+                type: def.type,
+                label: def.label,
+                props: JSON.parse(JSON.stringify(def.props)),
+                activeFunctions: [],
+            });
+        }
+
+        // ==================== СОХРАНЕНИЕ ====================
+        function saveProject() {
+            localStorage.setItem('appbuilder_data', JSON.stringify({ widgets, counter }));
+        }
+        function loadProject() {
+            const raw = localStorage.getItem('appbuilder_data');
+            if (!raw) { showToast('📂 Нет сохранений'); return; }
+            try {
+                const d = JSON.parse(raw);
+                widgets = d.widgets || [];
+                counter = d.counter || 1;
+                selectedId = null;
+                renderPhone();
+                renderInspector();
+                showToast('📂 Загружено');
+            } catch(e) { showToast('❌ Ошибка'); }
+        }
+
+        // ==================== СКАЧИВАНИЕ ====================
+        function downloadProject() {
+            if (!widgets.length) { showToast('⚠️ Добавьте компоненты!'); return; }
+            const name = document.getElementById('projectName').value || 'MyApp';
+            
+            let xml = `<?xml version="1.0" encoding="utf-8"?>\n<!-- Создано в App Free Builder Pro -->\n<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="16dp" android:background="#f8fafc">\n\n`;
+            
+            let java = `// MainActivity.java\npackage com.example.${name.toLowerCase()};\n\nimport android.os.Bundle;\nimport android.widget.*;\nimport androidx.appcompat.app.AppCompatActivity;\n\npublic class MainActivity extends AppCompatActivity {\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        setContentView(R.layout.activity_main);\n\n`;
+            
+            widgets.forEach((w, i) => {
+                if (w.type === 'appbar') return;
+                const id = `widget${i}`;
+                switch(w.type) {
+                    case 'text':
+                        xml += `    <TextView android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${esc(w.props.content)}" android:textColor="${w.props.color}" android:textSize="${w.props.fontSize}sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>\n\n`;
+                        if (w.activeFunctions?.includes('onClick')) java += `        findViewById(R.id.${id}).setOnClickListener(v -> Toast.makeText(this, "Текст нажат", Toast.LENGTH_SHORT).show());\n`;
+                        break;
+                    case 'button':
+                        xml += `    <Button android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="${w.props.height}dp" android:text="${esc(w.props.label)}" android:backgroundTint="${w.props.bgColor}" android:textColor="${w.props.textColor}" android:textSize="${w.props.fontSize}sp" app:cornerRadius="${w.props.borderRadius}dp" android:layout_marginBottom="12dp"/>\n\n`;
+                        if (w.activeFunctions?.includes('onClick')) java += `        findViewById(R.id.${id}).setOnClickListener(v -> { ${w.props.onClick || 'Toast.makeText(this, "Нажато!", Toast.LENGTH_SHORT).show();'} });\n`;
+                        break;
+                    case 'input':
+                        xml += `    <EditText android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="${esc(w.props.placeholder)}" android:textSize="${w.props.fontSize}sp" android:padding="14dp" android:inputType="${w.props.isPassword?'textPassword':'text'}" android:background="@drawable/edittext_bg" android:layout_marginBottom="12dp"/>\n\n`;
+                        break;
+                    case 'image':
+                        xml += `    <ImageView android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="${w.props.height}dp" android:scaleType="centerCrop" android:layout_marginBottom="12dp"/>\n\n`;
+                        break;
+                    case 'card':
+                        xml += `    <androidx.cardview.widget.CardView android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" app:cardElevation="${w.props.elevation}dp" app:cardCornerRadius="${w.props.borderRadius}dp" app:cardBackgroundColor="${w.props.bgColor}" android:padding="16dp" android:layout_marginBottom="12dp"><LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="wrap_content"><TextView android:text="${esc(w.props.title)}" android:textSize="18sp" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/><TextView android:text="${esc(w.props.subtitle)}" android:textSize="14sp" android:textColor="#64748b" android:layout_width="wrap_content" android:layout_height="wrap_content"/></LinearLayout></androidx.cardview.widget.CardView>\n\n`;
+                        if (w.activeFunctions?.includes('onClick')) java += `        findViewById(R.id.${id}).setOnClickListener(v -> Toast.makeText(this, "Карточка нажата", Toast.LENGTH_SHORT).show());\n`;
+                        break;
+                    case 'switch':
+                        xml += `    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginBottom="12dp"><TextView android:text="${esc(w.props.label)}" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:textSize="15sp"/><Switch android:id="@+id/${id}" android:layout_width="wrap_content" android:layout_height="wrap_content"/></LinearLayout>\n\n`;
+                        if (w.activeFunctions?.includes('onCheckedChanged')) java += `        ((Switch)findViewById(R.id.${id})).setOnCheckedChangeListener((btn, isChecked) -> Toast.makeText(this, "Переключатель: " + isChecked, Toast.LENGTH_SHORT).show());\n`;
+                        break;
+                    case 'slider':
+                        xml += `    <TextView android:id="@+id/${id}_label" android:text="${esc(w.props.label)}: ${w.props.value}" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="14sp"/><SeekBar android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="wrap_content" android:max="${w.props.max}" android:progress="${w.props.value}" android:layout_marginBottom="12dp"/>\n\n`;
+                        if (w.activeFunctions?.includes('onValueChanged')) java += `        ((SeekBar)findViewById(R.id.${id})).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() { public void onProgressChanged(SeekBar s, int p, boolean f) { ((TextView)findViewById(R.id.${id}_label)).setText("${esc(w.props.label)}: " + p); } public void onStartTrackingTouch(SeekBar s) {} public void onStopTrackingTouch(SeekBar s) {} });\n`;
+                        break;
+                    default:
+                        xml += `    <View android:id="@+id/${id}" android:layout_width="match_parent" android:layout_height="50dp" android:background="#f1f5f9" android:layout_marginBottom="12dp"/>\n\n`;
+                }
+            });
+            
+            xml += `</LinearLayout>`;
+            java += `    }\n}\n`;
+            
+            const full = `=== ПРОЕКТ ANDROID STUDIO ===\n=== ${name} ===\n\nСкопируйте содержимое ниже в соответствующие файлы:\n\n--- res/layout/activity_main.xml ---\n${xml}\n\n--- java/com/example/${name.toLowerCase()}/MainActivity.java ---\n${java}\n`;
+            
+            const blob = new Blob([full], {type:'text/plain;charset=utf-8'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = name + '_project.txt';
+            a.click();
+            showToast('📦 Проект скачан!');
+        }
+
+        // ==================== HELP ====================
+        function showHelp() { document.getElementById('helpModal').classList.add('show'); }
+        function closeHelp() { document.getElementById('helpModal').classList.remove('show'); }
+        document.getElementById('helpModal').addEventListener('click', e => { if (e.target.id === 'helpModal') closeHelp(); });
+
+        // ==================== TOAST ====================
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.textContent = m; t.classList.add('show');
+            clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        function updateCount() {
+            document.getElementById('widgetCount').textContent = widgets.length ? widgets.length + ' шт.' : '';
+        }
+
+        // ==================== ГЛОБАЛЬНЫЕ ====================
+        window.addWidget = addWidget;
+        window.selectWidget = selectWidget;
+        window.updateProp = updateProp;
+        window.deleteWidget = deleteWidget;
+        window.clearAll = clearAll;
+        window.toggleFunction = toggleFunction;
+        window.loadExample = loadExample;
+        window.saveProject = saveProject;
+        window.loadProject = loadProject;
+        window.downloadProject = downloadProject;
+        window.showHelp = showHelp;
+        window.closeHelp = closeHelp;
+
+        // ==================== ЗАПУСК ====================
+        renderPanel();
+        setupDropZone();
+        loadProject();
+        renderPhone();
+        updateCount();
+        console.log('🚀 App Free Builder Pro готов!');
+        console.log('📱 Перетаскивайте компоненты в телефон');
+        console.log('🖱️ Двигайте компоненты внутри телефона');
+        console.log('⚙️ Кликайте для настроек');
+        console.log('📥 Кнопка "Пример" загружает готовое приложение');
+        console.log('❓ Кнопка "Как работает" показывает инструкцию');
     </script>
 </body>
 </html>
